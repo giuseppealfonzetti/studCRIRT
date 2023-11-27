@@ -34,7 +34,13 @@ test_that("extract_params() output", {
     beta_exams[[ex]] <- rnorm(grades, 0, 1)
   }
 
-  theta_irt <- c(alpha, unlist(beta_exams))
+  set.seed(4)
+  gamma <- rnorm(exams, 0, 1)
+
+  set.seed(5)
+  lambda <- rnorm(exams, 0, 1)
+
+  theta_irt <- c(alpha, unlist(beta_exams), gamma, lambda)
 
   theta <- c(theta_cr, theta_irt)
 
@@ -81,7 +87,7 @@ test_that("extract_params() output", {
       OUTCOME = NA,
       EXAM = exam
     )
-    expect_identical(coeff, beta_exams[[exam]])
+    expect_identical(coeff, alpha[exam])
 
     inter <- extract_params(
       THETA = theta,
@@ -94,7 +100,21 @@ test_that("extract_params() output", {
       OUTCOME = NA,
       EXAM = exam
     )
-    expect_identical(inter, alpha[exam])
+    expect_identical(inter,  beta_exams[[exam]])
+
+    speed <- extract_params(
+      THETA = theta,
+      DIM_EXT = dim_ext_cr,
+      NYB = number_years_before,
+      NYA = number_years_after,
+      N_GRADES = grades,
+      N_EXAMS = exams,
+      PAR_TYPE = 3,
+      OUTCOME = NA,
+      EXAM = exam
+    )
+    expect_identical(speed,  c(gamma[exam], lambda[exam]))
+
   }
 
 

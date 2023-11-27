@@ -13,7 +13,7 @@ hazard(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA)
 
 \item{THETA_CR}{Portion of the parameter vector related to the competing risk model}
 
-\item{COVARIATES}{First 2 values for ability and speed. Remaining values are external covariates}
+\item{COVARIATES}{The first 2 values refers to ability and speed respectively. Remaining values are external covariates}
 
 \item{NYB}{number of years in the non-graduatable state. Needed for determining how many time-related intercepts.}
 

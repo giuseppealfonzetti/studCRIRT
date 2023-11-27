@@ -25,11 +25,11 @@ extract_params(
 
 \item{NYA}{number of years in the graduatable state. Needed for determining how many time-related intercepts in the competing risk model.}
 
-\item{N_GRADES}{number of grade-block modelled.}
+\item{N_GRADES}{number of grades modelled.}
 
 \item{N_EXAMS}{number of exams.}
 
-\item{PAR_TYPE}{1 for regression coeff, 0 for intercepts.}
+\item{PAR_TYPE}{1 for regression coeff, 2 for intercepts, 3 for speed-exam-related parameters}
 
 \item{OUTCOME}{outcome of interest. Possible values: \code{d}, \code{t} and \code{g}.}
 

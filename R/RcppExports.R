@@ -5,7 +5,7 @@
 #' @param OUTCOME 1 for dropout, 2 for transfer, 3 for graduation
 #' @param YEAR Possible values 1:NYB in case of dropout/transfer; 1:NYA in case of graduation
 #' @param THETA_CR Portion of the parameter vector related to the competing risk model
-#' @param COVARIATES First 2 values for ability and speed. Remaining values are external covariates
+#' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external covariates
 #' @param NYB number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
 #' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts.
 #' @returns It returns the hazard probability of the specific outcome and year.
@@ -15,12 +15,58 @@ hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA) {
 }
 
 #' Extract parameters related to the competing risk model
+#'
 extract_params_cr <- function(THETA_CR, DIM_EXT, NYB, NYA, OPTION) {
     .Call(`_studCRIRT_extract_params_cr`, THETA_CR, DIM_EXT, NYB, NYA, OPTION)
 }
 
 #' Extract parameters related to the IRT model
+#' @export
 extract_params_irt <- function(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM) {
     .Call(`_studCRIRT_extract_params_irt`, THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM)
+}
+
+#' Evaluate the probability of last attempt to an exam to occur before a certain day
+#'
+#' @param EXAM Exam of interest.
+#' @param DAY Day of interest.
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param SPEED speed value.
+NULL
+
+#' Evaluate the probability of grades greater or equal than the reference one
+#' @param GRADE Grade used as reference
+#' @param EXAM Exam of interest
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param ABILITY Ability value.
+#'
+#' @returns It returns the probability of obtaining grades higher than `GRADE` on exam `EXAM`.
+#' @export
+pGreaterGrades <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
+    .Call(`_studCRIRT_pGreaterGrades`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+}
+
+#' Evaluate the probability of getting a specific grade
+#'
+#' @param GRADE Grade used as reference
+#' @param EXAM Exam of interest
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param ABILITY Ability value.
+#'
+#' @returns It returns the probability of obtaining the grade `GRADE` on exam `EXAM`.
+#' @export
+pGrade <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
+    .Call(`_studCRIRT_pGrade`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+}
+
+#' @export
+pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED) {
+    .Call(`_studCRIRT_pTimeExam`, EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED)
 }
 

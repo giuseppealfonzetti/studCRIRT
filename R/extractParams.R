@@ -28,9 +28,9 @@ extract_params_CR <- function(THETA_CR, DIM_EXT, NYB, NYA){
 #' @param DIM_EXT number of external covariates in the competing risk model.
 #' @param NYB number of years in the non-graduatable state. Needed for determining how many time-related intercepts in the competing risk model.
 #' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts in the competing risk model.
-#' @param N_GRADES number of grade-block modelled.
+#' @param N_GRADES number of grades modelled.
 #' @param N_EXAMS number of exams.
-#' @param PAR_TYPE 1 for regression coeff, 0 for intercepts.
+#' @param PAR_TYPE 1 for regression coeff, 2 for intercepts, 3 for speed-exam-related parameters
 #' @param OUTCOME outcome of interest. Possible values: `d`, `t` and `g`.
 #' @param EXAM exam of interest. Posible values in `1:N_EXAMS`.
 #'
@@ -46,15 +46,15 @@ extract_params <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS, PAR_TYPE
   if(!is.integer(N_EXAMS)) stop('N_EXAMS not accepted.')
 
   if(!(OUTCOME %in% c('d', 't', 'g', NA) )) stop('OUTCOME not accepted.')
-  if(is.integer(EXAM) & !(EXAM %in% 1:N_EXAMS )) stop('EXAM chosen not accepted.')
+  if(!(EXAM %in% c(1:N_EXAMS, NA) )) stop('EXAM chosen not accepted.')
   if(!is.na(EXAM) & !is.na(OUTCOME)) stop('Both EXAM and OUTCOME selected.')
   out <- c()
 
   theta_cr <- THETA[1:(3*DIM_EXT + 6 + 2*NYB + NYA)]
-  theta_irt <-THETA[(3*DIM_EXT + 7 + 2*NYB + NYA):(3*DIM_EXT + 6 + 2*NYB + NYA + N_EXAMS*(N_GRADES+1))]
+  theta_irt <-THETA[(3*DIM_EXT + 7 + 2*NYB + NYA):(3*DIM_EXT + 6 + 2*NYB + NYA + N_EXAMS*(N_GRADES+1) + 2*N_EXAMS)]
 
   if(!is.na(EXAM)){
-    if(!(PAR_TYPE %in% c(1,2))) stop('PAR_TYPE not accepted.')
+    if(!(PAR_TYPE %in% c(1,2,3))) stop('PAR_TYPE not accepted.')
     out <- extract_params_irt(
       THETA_IRT = theta_irt,
       N_GRADES = N_GRADES,
@@ -78,7 +78,7 @@ extract_params <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS, PAR_TYPE
 
   }
 
-  if(!is.na(EXAM) & !is.na(OUTCOME)) out <- list('cr' = theta_cr, 'irt' = theta_irt)
+  if(is.na(EXAM) & is.na(OUTCOME)){out <- list('cr' = theta_cr, 'irt' = theta_irt)}
 
 
   return(out)

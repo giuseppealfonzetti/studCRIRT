@@ -2,7 +2,11 @@
 
 export(extract_params)
 export(extract_params_CR)
+export(extract_params_irt)
 export(hazard)
+export(pGrade)
+export(pGreaterGrades)
+export(pTimeExam)
 import(RcppEigen)
 importFrom(Rcpp,sourceCpp)
 useDynLib(studCRIRT, .registration = TRUE)

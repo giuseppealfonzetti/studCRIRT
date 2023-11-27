@@ -1,4 +1,4 @@
-test_that("extract_params() output", {
+test_that("hazard() output", {
   ## External covariates CR
   dim_ext_cr <- 3L;
 

@@ -6,3 +6,4 @@
 // [[Rcpp::depends(RcppEigen)]]
 #include "extractParams.h"
 #include "crMod.h"
+#include "irtMod.h"

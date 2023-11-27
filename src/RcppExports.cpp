@@ -43,12 +43,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // extract_params_irt
-Eigen::VectorXd extract_params_irt(Eigen::Map<Eigen::VectorXd> THETA_IRT, const unsigned int N_GRADES, const unsigned int N_EXAMS, const unsigned int OPTION, const unsigned int EXAM);
+Eigen::VectorXd extract_params_irt(Eigen::VectorXd THETA_IRT, const unsigned int N_GRADES, const unsigned int N_EXAMS, const unsigned int OPTION, const unsigned int EXAM);
 RcppExport SEXP _studCRIRT_extract_params_irt(SEXP THETA_IRTSEXP, SEXP N_GRADESSEXP, SEXP N_EXAMSSEXP, SEXP OPTIONSEXP, SEXP EXAMSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd> >::type THETA_IRT(THETA_IRTSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_IRT(THETA_IRTSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type N_GRADES(N_GRADESSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type N_EXAMS(N_EXAMSSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type OPTION(OPTIONSEXP);
@@ -57,11 +57,62 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// pGreaterGrades
+double pGreaterGrades(const unsigned int GRADE, const unsigned int EXAM, Eigen::VectorXd THETA_IRT, const unsigned int N_GRADES, const unsigned int N_EXAMS, const double ABILITY);
+RcppExport SEXP _studCRIRT_pGreaterGrades(SEXP GRADESEXP, SEXP EXAMSEXP, SEXP THETA_IRTSEXP, SEXP N_GRADESSEXP, SEXP N_EXAMSSEXP, SEXP ABILITYSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const unsigned int >::type GRADE(GRADESEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type EXAM(EXAMSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_IRT(THETA_IRTSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_GRADES(N_GRADESSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_EXAMS(N_EXAMSSEXP);
+    Rcpp::traits::input_parameter< const double >::type ABILITY(ABILITYSEXP);
+    rcpp_result_gen = Rcpp::wrap(pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pGrade
+double pGrade(const unsigned int GRADE, const unsigned int EXAM, Eigen::VectorXd THETA_IRT, const unsigned int N_GRADES, const unsigned int N_EXAMS, const double ABILITY);
+RcppExport SEXP _studCRIRT_pGrade(SEXP GRADESEXP, SEXP EXAMSEXP, SEXP THETA_IRTSEXP, SEXP N_GRADESSEXP, SEXP N_EXAMSSEXP, SEXP ABILITYSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const unsigned int >::type GRADE(GRADESEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type EXAM(EXAMSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_IRT(THETA_IRTSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_GRADES(N_GRADESSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_EXAMS(N_EXAMSSEXP);
+    Rcpp::traits::input_parameter< const double >::type ABILITY(ABILITYSEXP);
+    rcpp_result_gen = Rcpp::wrap(pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY));
+    return rcpp_result_gen;
+END_RCPP
+}
+// pTimeExam
+double pTimeExam(const unsigned int EXAM, const double DAY, Eigen::VectorXd THETA_IRT, const unsigned int N_GRADES, const unsigned int N_EXAMS, const double SPEED);
+RcppExport SEXP _studCRIRT_pTimeExam(SEXP EXAMSEXP, SEXP DAYSEXP, SEXP THETA_IRTSEXP, SEXP N_GRADESSEXP, SEXP N_EXAMSSEXP, SEXP SPEEDSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const unsigned int >::type EXAM(EXAMSEXP);
+    Rcpp::traits::input_parameter< const double >::type DAY(DAYSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_IRT(THETA_IRTSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_GRADES(N_GRADESSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_EXAMS(N_EXAMSSEXP);
+    Rcpp::traits::input_parameter< const double >::type SPEED(SPEEDSEXP);
+    rcpp_result_gen = Rcpp::wrap(pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_hazard", (DL_FUNC) &_studCRIRT_hazard, 6},
     {"_studCRIRT_extract_params_cr", (DL_FUNC) &_studCRIRT_extract_params_cr, 5},
     {"_studCRIRT_extract_params_irt", (DL_FUNC) &_studCRIRT_extract_params_irt, 5},
+    {"_studCRIRT_pGreaterGrades", (DL_FUNC) &_studCRIRT_pGreaterGrades, 6},
+    {"_studCRIRT_pGrade", (DL_FUNC) &_studCRIRT_pGrade, 6},
+    {"_studCRIRT_pTimeExam", (DL_FUNC) &_studCRIRT_pTimeExam, 6},
     {NULL, NULL, 0}
 };
 

@@ -2,6 +2,7 @@
 #define extractParams_H
 
 //' Extract parameters related to the competing risk model
+//'
 // [[Rcpp::export]]
 Eigen::VectorXd extract_params_cr(
     Eigen::VectorXd THETA_CR,
@@ -37,9 +38,10 @@ Eigen::VectorXd extract_params_cr(
 }
 
 //' Extract parameters related to the IRT model
+//' @export
 // [[Rcpp::export]]
  Eigen::VectorXd extract_params_irt(
-     Eigen::Map<Eigen::VectorXd> THETA_IRT,
+     Eigen::VectorXd THETA_IRT,
      const unsigned int N_GRADES,
      const unsigned int N_EXAMS,
      const unsigned int OPTION,
@@ -48,11 +50,17 @@ Eigen::VectorXd extract_params_cr(
    Eigen::VectorXd out;
 
    switch(OPTION){
-   case 2: // intercepts
+   case 1: // coeff
      out = THETA_IRT.segment(EXAM-1, 1);
      break;
-   case 1: // coeff
+   case 2: // intercept
      out = THETA_IRT.segment(N_EXAMS + (EXAM-1)*N_GRADES, N_GRADES);
+     break;
+   case 3: // speed-related
+    out = Eigen::VectorXd::Zero(2);
+    out(0) = THETA_IRT(N_EXAMS + N_EXAMS*N_GRADES + EXAM - 1);
+    out(1) = THETA_IRT(2*N_EXAMS + N_EXAMS*N_GRADES + EXAM - 1);
+    break;
     }
 
 
