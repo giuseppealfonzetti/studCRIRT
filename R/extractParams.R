@@ -1,3 +1,25 @@
+#' Threshold reparameterisation
+#'
+#' @param THRESHOLDS Thresholds
+#' @param UN2CON TRUE if going from the unconstrained space to the constrained one.
+#'
+#' @export
+reparThres <- function(THRESHOLDS, UN2CON = T){
+  out <- c()
+  if(UN2CON){
+    reverse <- rev(THRESHOLDS)
+    param <- reverse[1]
+    tmp <- reverse[-1]
+    tmp <- exp(tmp)
+    param <- c(param, tmp)
+    out <- rev(cumsum(param))
+  }else{
+
+  }
+
+  return(out)
+}
+
 #' Construct parameter vector from list
 #'
 #' @param PARAMS_LIST Parameter list. Structure to be documented.

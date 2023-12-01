@@ -152,13 +152,6 @@ double examLik(
     out = 1 - exp(log(pExam)+log(pTime));
   }
 
-  // // output list
-  // Rcpp::List output =
-  //   Rcpp::List::create(
-  //     Rcpp::Named("pExam") = pExam,
-  //     Rcpp::Named("pTime") = pTime,
-  //     Rcpp::Named("out") = out
-  //   );
   return(out);
 
 }
