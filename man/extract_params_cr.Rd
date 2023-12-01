@@ -6,6 +6,21 @@
 \usage{
 extract_params_cr(THETA_CR, DIM_EXT, NYB, NYA, OPTION)
 }
+\arguments{
+\item{THETA_CR}{Parameter vector related to the competing risk model}
+
+\item{DIM_EXT}{Number of external covariates in the competing risk model.}
+
+\item{NYB}{Number of years in the non-graduatable state. Needed for
+determining how many time-related intercepts in the competing risk model.}
+
+\item{NYA}{Number of years in the graduatable state.
+Needed for determining how many time-related intercepts in the competing risk model.}
+
+\item{OPTION}{It selects the parameters of interest.
+\code{1} for beta_d, \code{2} for beta_t, \code{3} for beta_g, \code{4} for beta0_d,
+\code{5} for beta0_t, \code{6} for beta0_g.}
+}
 \description{
 Extract parameters related to the competing risk model
 }

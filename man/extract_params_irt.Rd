@@ -6,6 +6,18 @@
 \usage{
 extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM)
 }
+\arguments{
+\item{THETA_IRT}{parameter vector related to irt model}
+
+\item{N_GRADES}{number of grades modelled.}
+
+\item{N_EXAMS}{number of exams.}
+
+\item{OPTION}{Select parameters of interest. \code{1} for exam-grades slopes,
+\code{2} for exam-grade intercepts, \code{3} for exam-speed parameters.}
+
+\item{EXAM}{exam of interest. Posible values in \code{1:N_EXAMS}.}
+}
 \description{
 Extract parameters related to the IRT model
 }

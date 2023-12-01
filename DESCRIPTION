@@ -18,4 +18,5 @@ LinkingTo:
     Rcpp,
     RcppEigen
 Imports: 
-    Rcpp
+    Rcpp,
+    RcppEigen

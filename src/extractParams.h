@@ -2,6 +2,15 @@
 #define extractParams_H
 
 //' Extract parameters related to the competing risk model
+//' @param THETA_CR Parameter vector related to the competing risk model
+//' @param DIM_EXT Number of external covariates in the competing risk model.
+//' @param NYB Number of years in the non-graduatable state. Needed for
+//' determining how many time-related intercepts in the competing risk model.
+//' @param NYA Number of years in the graduatable state.
+//'  Needed for determining how many time-related intercepts in the competing risk model.
+//' @param OPTION It selects the parameters of interest.
+//' `1` for beta_d, `2` for beta_t, `3` for beta_g, `4` for beta0_d,
+//' `5` for beta0_t, `6` for beta0_g.
 //'
 // [[Rcpp::export]]
 Eigen::VectorXd extract_params_cr(
@@ -38,9 +47,15 @@ Eigen::VectorXd extract_params_cr(
 }
 
 //' Extract parameters related to the IRT model
+//' @param THETA_IRT parameter vector related to irt model
+//' @param N_GRADES number of grades modelled.
+//' @param N_EXAMS number of exams.
+//' @param OPTION Select parameters of interest. `1` for exam-grades slopes,
+//' `2` for exam-grade intercepts, `3` for exam-speed parameters.
+//' @param EXAM exam of interest. Posible values in `1:N_EXAMS`.
 //' @export
 // [[Rcpp::export]]
- Eigen::VectorXd extract_params_irt(
+Eigen::VectorXd extract_params_irt(
      Eigen::VectorXd THETA_IRT,
      const unsigned int N_GRADES,
      const unsigned int N_EXAMS,

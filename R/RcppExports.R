@@ -2,39 +2,71 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' Evaluate hazard function based on outcome and year
+#'
 #' @param OUTCOME 1 for dropout, 2 for transfer, 3 for graduation
 #' @param YEAR Possible values 1:NYB in case of dropout/transfer; 1:NYA in case of graduation
 #' @param THETA_CR Portion of the parameter vector related to the competing risk model
 #' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external covariates
 #' @param NYB number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
 #' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts.
+#'
 #' @returns It returns the hazard probability of the specific outcome and year.
+#'
 #' @export
 hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA) {
     .Call(`_studCRIRT_hazard`, OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA)
 }
 
+#' Evaluate survival function given a the range of years of interest
+#'
+#' @param YEAR_FIRST First year to evaluate.
+#' @param YEAR_LAST Last year to evaluate.
+#' @param REGIMEFLAG `TRUE` if graduation is possible, `FALSE` otherwise.
+#' @param THETA_CR Portion of the parameter vector related to the competing risk model
+#' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
+#' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
+#' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
+#'
+#' @returns It returns the probability of survival from `YEAR FIRST` to `YEAR_LAST` included.
+#'
+#' @export
+survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L) {
+    .Call(`_studCRIRT_survival`, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
+}
+
+#' Evaluate Outcome Likelihood
+#'
+#' @export
+outcomeLik <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L) {
+    .Call(`_studCRIRT_outcomeLik`, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
+}
+
 #' Extract parameters related to the competing risk model
+#' @param THETA_CR Parameter vector related to the competing risk model
+#' @param DIM_EXT Number of external covariates in the competing risk model.
+#' @param NYB Number of years in the non-graduatable state. Needed for
+#' determining how many time-related intercepts in the competing risk model.
+#' @param NYA Number of years in the graduatable state.
+#'  Needed for determining how many time-related intercepts in the competing risk model.
+#' @param OPTION It selects the parameters of interest.
+#' `1` for beta_d, `2` for beta_t, `3` for beta_g, `4` for beta0_d,
+#' `5` for beta0_t, `6` for beta0_g.
 #'
 extract_params_cr <- function(THETA_CR, DIM_EXT, NYB, NYA, OPTION) {
     .Call(`_studCRIRT_extract_params_cr`, THETA_CR, DIM_EXT, NYB, NYA, OPTION)
 }
 
 #' Extract parameters related to the IRT model
+#' @param THETA_IRT parameter vector related to irt model
+#' @param N_GRADES number of grades modelled.
+#' @param N_EXAMS number of exams.
+#' @param OPTION Select parameters of interest. `1` for exam-grades slopes,
+#' `2` for exam-grade intercepts, `3` for exam-speed parameters.
+#' @param EXAM exam of interest. Posible values in `1:N_EXAMS`.
 #' @export
 extract_params_irt <- function(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM) {
     .Call(`_studCRIRT_extract_params_irt`, THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM)
 }
-
-#' Evaluate the probability of last attempt to an exam to occur before a certain day
-#'
-#' @param EXAM Exam of interest.
-#' @param DAY Day of interest.
-#' @param THETA_IRT Portion of the parameter vector related to the IRT model
-#' @param N_GRADES Number of grades modelled.
-#' @param N_EXAMS Number of exams.
-#' @param SPEED speed value.
-NULL
 
 #' Evaluate the probability of grades greater or equal than the reference one
 #' @param GRADE Grade used as reference
@@ -65,8 +97,38 @@ pGrade <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
     .Call(`_studCRIRT_pGrade`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
 }
 
+#' Evaluate the c.d.f or p.d.f of the last attempt to an exam
+#'
+#' @param EXAM Exam of interest.
+#' @param DAY Day of interest.
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param SPEED speed value.
+#' @param CDFFLAG `TRUE` for c.d.f. of time. `FALSE` for p.d.f.
+#'
 #' @export
-pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED) {
-    .Call(`_studCRIRT_pTimeExam`, EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED)
+pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG) {
+    .Call(`_studCRIRT_pTimeExam`, EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG)
+}
+
+#' Evaluate exam specific likelihood
+#'
+#' @param EXAM Exam of interest.
+#' @param GRADE Grade of interest.
+#' @param DAY Day of interest.
+#' @param OBSFLAG TRUE for observed, FALSE for not-observed.
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param ABILITY ability value.
+#' @param SPEED speed value.
+#'
+#' @returns It returns the probability of observing or not a specific
+#' grade on a given exam before a given day conditioned on ability and speed.
+#'
+#' @export
+examLik <- function(EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED) {
+    .Call(`_studCRIRT_examLik`, EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED)
 }
 

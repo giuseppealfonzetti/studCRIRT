@@ -1,27 +1,3 @@
-
-#' @export
-extract_params_CR <- function(THETA_CR, DIM_EXT, NYB, NYA){
-  beta_d <- THETA_CR[1:(DIM_EXT+2)]
-  beta_t <- THETA_CR[(DIM_EXT+3):(2*DIM_EXT+4)]
-  beta_g <- THETA_CR[(2*DIM_EXT+5):(3*DIM_EXT+6)]
-  beta0_d <- THETA_CR[(3*DIM_EXT+7):(3*DIM_EXT+6+NYB)]
-  beta0_t <- THETA_CR[(3*DIM_EXT+7+NYB):(3*DIM_EXT+6+2*NYB)]
-  beta0_g <- THETA_CR[(3*DIM_EXT+7+2*NYB):length(THETA_CR)]
-
-
-
-  out <- list(
-    'beta_d' = beta_d,
-    'beta_t' = beta_t,
-    'beta_g' = beta_g,
-    'beta0_d' = beta0_d,
-    'beta0_t' = beta0_t,
-    'beta0_g' = beta0_g
-  )
-
-  return(out)
-}
-
 #' Extract parameters of interest from theta vector
 #'
 #' @param THETA parameter vector
