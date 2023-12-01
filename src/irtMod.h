@@ -97,9 +97,11 @@ double pTimeExam(
     const double SPEED,
     const bool CDFFLAG
 ){
-  Eigen::VectorXd pars = extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, 3, EXAM);
-  const double mean = pars(0) - SPEED;
-  const double sd = 1/pars(1);
+  std::vector<double> pars(2);
+  pars[0] = extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, 3, EXAM)(0);
+  pars[1] = extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, 4, EXAM)(0);
+  const double mean = pars[0] - SPEED;
+  const double sd = 1/pars[1];
   double out;
   if(CDFFLAG){
     out = R::plnorm(DAY, mean, sd, true, false);

@@ -45,19 +45,51 @@ BEGIN_RCPP
 END_RCPP
 }
 // outcomeLik
-double outcomeLik(const unsigned int YEAR_FIRST, const unsigned int YEAR_LAST, Eigen::VectorXd THETA_CR, Eigen::VectorXd COVARIATES, const unsigned int NYB, const unsigned int NYA, const unsigned int YEAR_LAST_EXAM);
-RcppExport SEXP _studCRIRT_outcomeLik(SEXP YEAR_FIRSTSEXP, SEXP YEAR_LASTSEXP, SEXP THETA_CRSEXP, SEXP COVARIATESSEXP, SEXP NYBSEXP, SEXP NYASEXP, SEXP YEAR_LAST_EXAMSEXP) {
+double outcomeLik(const unsigned int OUTCOME, const unsigned int YEAR_FIRST, const unsigned int YEAR_LAST, const bool OBSFLAG, Eigen::VectorXd THETA_CR, Eigen::VectorXd COVARIATES, const unsigned int NYB, const unsigned int NYA, const unsigned int YEAR_LAST_EXAM);
+RcppExport SEXP _studCRIRT_outcomeLik(SEXP OUTCOMESEXP, SEXP YEAR_FIRSTSEXP, SEXP YEAR_LASTSEXP, SEXP OBSFLAGSEXP, SEXP THETA_CRSEXP, SEXP COVARIATESSEXP, SEXP NYBSEXP, SEXP NYASEXP, SEXP YEAR_LAST_EXAMSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const unsigned int >::type OUTCOME(OUTCOMESEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type YEAR_FIRST(YEAR_FIRSTSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type YEAR_LAST(YEAR_LASTSEXP);
+    Rcpp::traits::input_parameter< const bool >::type OBSFLAG(OBSFLAGSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_CR(THETA_CRSEXP);
     Rcpp::traits::input_parameter< Eigen::VectorXd >::type COVARIATES(COVARIATESSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type NYB(NYBSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type NYA(NYASEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type YEAR_LAST_EXAM(YEAR_LAST_EXAMSEXP);
-    rcpp_result_gen = Rcpp::wrap(outcomeLik(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
+    rcpp_result_gen = Rcpp::wrap(outcomeLik(OUTCOME, YEAR_FIRST, YEAR_LAST, OBSFLAG, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
+    return rcpp_result_gen;
+END_RCPP
+}
+// extract_params_idx_cr
+std::vector<unsigned int> extract_params_idx_cr(Eigen::VectorXd THETA_CR, const unsigned int DIM_EXT, const unsigned int NYB, const unsigned int NYA, const unsigned int OPTION);
+RcppExport SEXP _studCRIRT_extract_params_idx_cr(SEXP THETA_CRSEXP, SEXP DIM_EXTSEXP, SEXP NYBSEXP, SEXP NYASEXP, SEXP OPTIONSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_CR(THETA_CRSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type DIM_EXT(DIM_EXTSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type NYB(NYBSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type NYA(NYASEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type OPTION(OPTIONSEXP);
+    rcpp_result_gen = Rcpp::wrap(extract_params_idx_cr(THETA_CR, DIM_EXT, NYB, NYA, OPTION));
+    return rcpp_result_gen;
+END_RCPP
+}
+// extract_params_idx_irt
+std::vector<unsigned int> extract_params_idx_irt(Eigen::VectorXd THETA_IRT, const unsigned int N_GRADES, const unsigned int N_EXAMS, const unsigned int OPTION, const unsigned int EXAM);
+RcppExport SEXP _studCRIRT_extract_params_idx_irt(SEXP THETA_IRTSEXP, SEXP N_GRADESSEXP, SEXP N_EXAMSSEXP, SEXP OPTIONSEXP, SEXP EXAMSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type THETA_IRT(THETA_IRTSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_GRADES(N_GRADESSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_EXAMS(N_EXAMSSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type OPTION(OPTIONSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type EXAM(EXAMSEXP);
+    rcpp_result_gen = Rcpp::wrap(extract_params_idx_irt(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -163,7 +195,9 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_hazard", (DL_FUNC) &_studCRIRT_hazard, 6},
     {"_studCRIRT_survival", (DL_FUNC) &_studCRIRT_survival, 7},
-    {"_studCRIRT_outcomeLik", (DL_FUNC) &_studCRIRT_outcomeLik, 7},
+    {"_studCRIRT_outcomeLik", (DL_FUNC) &_studCRIRT_outcomeLik, 9},
+    {"_studCRIRT_extract_params_idx_cr", (DL_FUNC) &_studCRIRT_extract_params_idx_cr, 5},
+    {"_studCRIRT_extract_params_idx_irt", (DL_FUNC) &_studCRIRT_extract_params_idx_irt, 5},
     {"_studCRIRT_extract_params_cr", (DL_FUNC) &_studCRIRT_extract_params_cr, 5},
     {"_studCRIRT_extract_params_irt", (DL_FUNC) &_studCRIRT_extract_params_irt, 5},
     {"_studCRIRT_pGreaterGrades", (DL_FUNC) &_studCRIRT_pGreaterGrades, 6},

@@ -59,11 +59,11 @@ double hazard(
 //'
 //' @param YEAR_FIRST First year to evaluate.
 //' @param YEAR_LAST Last year to evaluate.
-//' @param REGIMEFLAG `TRUE` if graduation is possible, `FALSE` otherwise.
 //' @param THETA_CR Portion of the parameter vector related to the competing risk model
 //' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
 //' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
 //' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
+//' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
 //'
 //' @returns It returns the probability of survival from `YEAR FIRST` to `YEAR_LAST` included.
 //'
