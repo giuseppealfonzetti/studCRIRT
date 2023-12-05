@@ -20,12 +20,22 @@ paramsList2vec(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS)
 \item{N_EXAMS}{number of exams.}
 }
 \value{
+It returns the unconstrained parameter vector.
+}
+\description{
 Given a properly-structered list of parameters,
 it returns the implied unconstrained parameter vector.
 }
-\description{
-Construct parameter vector from list
+\section{Internal reparameterisations}{
+
+\itemize{
+\item Exam-specific intercepts vector. Decreasing from lower grade to higher.
+Reparametrised using \link{reparInt}(),
+\item Latent correlation. Reparameterised via Fisher's transformation.
+\item Standard deviations. Reparameterised via exponential transformation.
 }
+}
+
 \examples{
 seed <- 123
 

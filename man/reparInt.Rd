@@ -12,11 +12,12 @@ reparInt(X, CON2UN = T)
 \item{CON2UN}{TRUE if going from the constrained space to the unconstrained one.}
 }
 \value{
-It allows to go back and forth from constrained intercepts
-to unconstrained parameters.
+The numeric vector containing the constrained intercepts
+or the unconstrained parameters.
 }
 \description{
-Intercepts reparameterisation
+It allows to go back and forth from constrained intercepts
+to unconstrained parameters.
 }
 \examples{
 set.seed(123)

@@ -1,10 +1,14 @@
 #' Intercepts reparameterisation
 #'
+#' @description
+#' It allows to go back and forth from constrained intercepts
+#' to unconstrained parameters.
+#'
 #' @param X Intercepts or unconstrained parameter values for grades low-to-high.
 #' @param CON2UN TRUE if going from the constrained space to the unconstrained one.
 #'
-#' @returns It allows to go back and forth from constrained intercepts
-#' to unconstrained parameters.
+#' @returns The numeric vector containing the constrained intercepts
+#' or the unconstrained parameters.
 #'
 #' @examples
 #' set.seed(123)
@@ -41,7 +45,68 @@ reparInt <- function(X, CON2UN = T){
   return(out)
 }
 
+#' Check if the provided parameter list is genuine
+#'
+#' @inheritParams paramsList2vec
+#' @export
+checkerList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
+
+  if(!is.numeric(unlist(PARAMS_LIST)))stop('PARAMS_LIST contains non-numeric values.')
+  # Check if all parameter blocks are specified
+  sapply(c('CR', 'IRT', 'LAT'), function(x) {if(!(x %in% names(PARAMS_LIST))) stop(paste0('Parameters block ', x, ' not detected'))})
+  sapply(c('Dropout', 'Transfer', 'Graduation'), function(x) {if(!(x %in% names(PARAMS_LIST[['CR']]))) stop(paste0('Parameters block ', x, ' not detected'))})
+  sapply(c('Exams_slopes', 'Exams_grades_intercepts', 'Exams_average_time', 'Exams_variability_time'), function(x) {if(!(x %in% names(PARAMS_LIST[['IRT']]))) stop(paste0('Parameters block ', x, ' not detected'))})
+  sapply(c('Corr', 'Speed_variability'), function(x) {if(!(x %in% names(PARAMS_LIST[['LAT']]))) stop(paste0('Parameters block ', x, ' not detected'))})
+
+  # Check input types
+  if(!is.integer(c(DIM_EXT,NYB,NYA, N_GRADES, N_EXAMS))) stop('Some of DIM_EXT,NYB,NYA, N_GRADES, N_EXAMS is not an integer.')
+
+  # Check dimensions CR inputs
+  for(outcome in c('Dropout', 'Transfer', 'Graduation')){
+    sapply(c('Slope_ability', 'Slope_speed'), function(x) {if(!(x %in% names(PARAMS_LIST[['CR']][[outcome]]))) stop(paste0('Parameters block ', x, ' not detected for ', outcome, '.'))})
+    sapply(c('Slope_ability', 'Slope_speed'), function(x) {if((length(PARAMS_LIST[['CR']][[outcome]][[x]])>1)) stop(paste0('Parameters block ', x, ' not valid for ', outcome, '.'))})
+    if(length(PARAMS_LIST[['CR']][[outcome]][['Slope_covariates']])!= DIM_EXT) {stop(paste0('Slope covariates dimension does not match DIM_EXT for ', outcome, '.'))}
+
+    if(outcome %in% c('Dropout', 'Transfer')){
+      if(length(PARAMS_LIST[['CR']][[outcome]][['Intercepts_year']])!= NYB) {stop(paste0('Intercepts_year does not match NYB for ', outcome, '.'))}
+    } else if (outcome == 'Graduation'){
+      if(length(PARAMS_LIST[['CR']][[outcome]][['Intercepts_year']])!= NYA) {stop(paste0('Intercepts_year does not match NYA for ', outcome, '.'))}
+    }
+  }
+
+  # Check dimensions IRT inputs
+  if(length(PARAMS_LIST[['IRT']][['Exams_slopes']])!= N_EXAMS) stop(paste0('The number of exams slopes does not match N_EXAMS.'))
+  if(length(PARAMS_LIST[['IRT']][['Exams_average_time']])!= N_EXAMS) stop(paste0('The number of exams average times does not mathch N_EXAMS.'))
+  if(length(PARAMS_LIST[['IRT']][['Exams_variability_time']])!= N_EXAMS) stop(paste0('The number of exams time-variance parameters does not mathch N_EXAMS.'))
+  if(ncol(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])!= N_GRADES) stop(paste0('The number of columns for exams-grades intercepts does not mathch N_GRADES.'))
+  if(nrow(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])!= N_EXAMS) stop(paste0('The number of rows for exams-grades intercepts does not mathch N_EXAMS'))
+
+  # Check LAT inputs
+  if((length(PARAMS_LIST[['LAT']][['Corr']])>1) | !is.numeric(PARAMS_LIST[['LAT']][['Corr']])) stop('Latent correlation parameter not valid')
+  if((length(PARAMS_LIST[['LAT']][['Speed_variability']])>1) | !is.numeric(PARAMS_LIST[['LAT']][['Speed_variability']])) stop('Speed_variability not valid')
+  if((abs(PARAMS_LIST[['LAT']][['Corr']])>=1) ) stop('Latent correlation parameter not valid')
+  if((PARAMS_LIST[['LAT']][['Speed_variability']]<=0)) stop('Speed_variability not valid')
+  if(sum(PARAMS_LIST[['IRT']][['Exams_variability_time']]>0)!= N_EXAMS) stop(paste0('The number of exams time-variance parameters does not mathch N_EXAMS.'))
+
+  return(TRUE)
+}
+
+
 #' Construct parameter vector from list
+#'
+#' @description
+#' Given a properly-structered list of parameters,
+#' it returns the implied unconstrained parameter vector.
+#'
+#' @section Internal reparameterisations:
+#'
+#' - Exam-specific intercepts vector. Decreasing from lower grade to higher.
+#' Reparametrised using \link{reparInt}(),
+#'
+#' - Latent correlation. Reparameterised via Fisher's transformation.
+#'
+#' - Standard deviations. Reparameterised via exponential transformation.
+#'
 #'
 #' @param PARAMS_LIST Parameter list. Structure to be documented. See the example.
 #' @param DIM_EXT number of external covariates in the competing risk model.
@@ -50,8 +115,7 @@ reparInt <- function(X, CON2UN = T){
 #' @param N_GRADES number of grades modelled.
 #' @param N_EXAMS number of exams.
 #'
-#' @returns Given a properly-structered list of parameters,
-#' it returns the implied unconstrained parameter vector.
+#' @returns It returns the unconstrained parameter vector.
 #'
 #' @examples
 #' seed <- 123
@@ -129,42 +193,8 @@ reparInt <- function(X, CON2UN = T){
 #' @export
 paramsList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
 
-  if(!is.numeric(unlist(PARAMS_LIST)))stop('PARAMS_LIST contains non-numeric values.')
-  # Check if all parameter blocks are specified
-  sapply(c('CR', 'IRT', 'LAT'), function(x) {if(!(x %in% names(PARAMS_LIST))) stop(paste0('Parameters block ', x, ' not detected'))})
-  sapply(c('Dropout', 'Transfer', 'Graduation'), function(x) {if(!(x %in% names(PARAMS_LIST[['CR']]))) stop(paste0('Parameters block ', x, ' not detected'))})
-  sapply(c('Exams_slopes', 'Exams_grades_intercepts', 'Exams_average_time', 'Exams_variability_time'), function(x) {if(!(x %in% names(PARAMS_LIST[['IRT']]))) stop(paste0('Parameters block ', x, ' not detected'))})
-  sapply(c('Corr', 'Speed_variability'), function(x) {if(!(x %in% names(PARAMS_LIST[['LAT']]))) stop(paste0('Parameters block ', x, ' not detected'))})
-
-  # Check input types
-  if(!is.integer(c(DIM_EXT,NYB,NYA, N_GRADES, N_EXAMS))) stop('Some of DIM_EXT,NYB,NYA, N_GRADES, N_EXAMS is not an integer.')
-
-  # Check dimensions CR inputs
-  for(outcome in c('Dropout', 'Transfer', 'Graduation')){
-    sapply(c('Slope_ability', 'Slope_speed'), function(x) {if(!(x %in% names(PARAMS_LIST[['CR']][[outcome]]))) stop(paste0('Parameters block ', x, ' not detected for ', outcome, '.'))})
-    sapply(c('Slope_ability', 'Slope_speed'), function(x) {if((length(PARAMS_LIST[['CR']][[outcome]][[x]])>1)) stop(paste0('Parameters block ', x, ' not valid for ', outcome, '.'))})
-    if(length(PARAMS_LIST[['CR']][[outcome]][['Slope_covariates']])!= DIM_EXT) {stop(paste0('Slope covariates dimension does not match DIM_EXT for ', outcome, '.'))}
-
-    if(outcome %in% c('Dropout', 'Transfer')){
-      if(length(PARAMS_LIST[['CR']][[outcome]][['Intercepts_year']])!= NYB) {stop(paste0('Intercepts_year does not match NYB for ', outcome, '.'))}
-      } else if (outcome == 'Graduation'){
-          if(length(PARAMS_LIST[['CR']][[outcome]][['Intercepts_year']])!= NYA) {stop(paste0('Intercepts_year does not match NYA for ', outcome, '.'))}
-          }
-    }
-
-  # Check dimensions IRT inputs
-  if(length(PARAMS_LIST[['IRT']][['Exams_slopes']])!= N_EXAMS) stop(paste0('The number of exams slopes does not mathch N_EXAMS.'))
-  if(length(PARAMS_LIST[['IRT']][['Exams_average_time']])!= N_EXAMS) stop(paste0('The number of exams average times does not mathch N_EXAMS.'))
-  if(length(PARAMS_LIST[['IRT']][['Exams_variability_time']])!= N_EXAMS) stop(paste0('The number of exams time-variance parameters does not mathch N_EXAMS.'))
-  if(ncol(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])!= N_GRADES) stop(paste0('The number of columns for exams-grades intercepts does not mathch N_GRADES.'))
-  if(nrow(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])!= N_EXAMS) stop(paste0('The number of rows for exams-grades intercepts does not mathch N_EXAMS'))
-
-  # Check LAT inputs
-  if((length(PARAMS_LIST[['LAT']][['Corr']])>1) | !is.numeric(PARAMS_LIST[['LAT']][['Corr']])) stop('Latent correlation parameter not valid')
-  if((length(PARAMS_LIST[['LAT']][['Speed_variability']])>1) | !is.numeric(PARAMS_LIST[['LAT']][['Speed_variability']])) stop('Speed_variability not valid')
-  if((abs(PARAMS_LIST[['LAT']][['Corr']])>1) ) stop('Latent correlation parameter not valid')
-  if((PARAMS_LIST[['LAT']][['Speed_variability']]<=0)) stop('Speed_variability not valid')
-
+  # handle errors
+  checkerList2vec(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS)
 
   # Intercepts reparameterisation
   repExamsGradesInt <-
@@ -189,8 +219,8 @@ paramsList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                  repExamsGradesInt,
                  # as.vector(t(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])),
                  PARAMS_LIST[['IRT']][['Exams_average_time']],
-                 PARAMS_LIST[['IRT']][['Exams_variability_time']])
-  theta_lat <- c(PARAMS_LIST[['LAT']][['Corr']], PARAMS_LIST[['LAT']][['Speed_variability']])
+                 log(PARAMS_LIST[['IRT']][['Exams_variability_time']]))
+  theta_lat <- c(atanh(PARAMS_LIST[['LAT']][['Corr']]), log(PARAMS_LIST[['LAT']][['Speed_variability']]))
   theta <- c(theta_cr, theta_irt, theta_lat)
 
   return(theta)
@@ -210,11 +240,22 @@ paramsList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
 #'
 #' @examples
 #'
-#' # Use example from paramsList2vec() documentation
-#' # to get a proper example of parameter vector
-#' example(paramsList2vec)
+#' seed <- 123
 #'
-#' # Retrieve the list
+#' ## Setup dimensions
+#' external_covariates <- 3L     # number of external covariates
+#' years_before <- 6L            # number of possible years in the regime without graduation
+#' years_after <- 2L             # number of possible years in the regime with graduation
+#' grades <- 4L                  # number of grades
+#' exams <- 10L                  # number of exams
+#'
+#' dim <- 3 * (external_covariates+2) + 2 * (years_before) +
+#'         years_after + 3 * exams + exams * grades + 2
+#'
+#' set.seed(seed)
+#' theta <- rnorm(dim)
+#'
+#' ## Retrieve the list
 #' params_list <- paramsVec2list(
 #'   THETA = theta,
 #'   DIM_EXT = external_covariates,
@@ -299,12 +340,12 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                                                                                         N_GRADES = N_GRADES,
                                                                                         N_EXAMS = N_EXAMS,
                                                                                         OPTION = 3, EXAM = x)))
-  params_list[['IRT']][['Exams_variability_time']] <- unlist(lapply(1:N_EXAMS,
+  params_list[['IRT']][['Exams_variability_time']] <- exp(unlist(lapply(1:N_EXAMS,
                                                              function(x) extract_params_irt(THETA_IRT = theta_irt,
                                                                                             N_GRADES = N_GRADES,
                                                                                             N_EXAMS = N_EXAMS,
-                                                                                            OPTION = 4, EXAM = x)))
-  params_list[['LAT']][['Corr']] <- theta_lat[1]
-  params_list[['LAT']][['Speed_variability']] <- theta_lat[2]
+                                                                                            OPTION = 4, EXAM = x))))
+  params_list[['LAT']][['Corr']] <- tanh(theta_lat[1])
+  params_list[['LAT']][['Speed_variability']] <- exp(theta_lat[2])
   params_list
 }

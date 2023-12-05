@@ -58,6 +58,7 @@ outcomeLik <- function(OUTCOME, YEAR_FIRST, YEAR_LAST, OBSFLAG, THETA_CR, COVARI
 #'
 #' @returns It allows to go back and forth from constrained intercepts
 #' to unconstrained parameters.
+#'
 #' @export
 cppReparInt <- function(X, CON2UN = TRUE) {
     .Call(`_studCRIRT_cppReparInt`, X, CON2UN)

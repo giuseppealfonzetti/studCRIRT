@@ -28,11 +28,22 @@ Construct named list from parameter vector
 }
 \examples{
 
-# Use example from paramsList2vec() documentation
-# to get a proper example of parameter vector
-example(paramsList2vec)
+seed <- 123
 
-# Retrieve the list
+## Setup dimensions
+external_covariates <- 3L     # number of external covariates
+years_before <- 6L            # number of possible years in the regime without graduation
+years_after <- 2L             # number of possible years in the regime with graduation
+grades <- 4L                  # number of grades
+exams <- 10L                  # number of exams
+
+dim <- 3 * (external_covariates+2) + 2 * (years_before) +
+        years_after + 3 * exams + exams * grades + 2
+
+set.seed(seed)
+theta <- rnorm(dim)
+
+## Retrieve the list
 params_list <- paramsVec2list(
   THETA = theta,
   DIM_EXT = external_covariates,
