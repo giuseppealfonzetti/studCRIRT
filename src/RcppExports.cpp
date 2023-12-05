@@ -63,6 +63,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cppReparInt
+Eigen::VectorXd cppReparInt(const Eigen::VectorXd& X, bool CON2UN);
+RcppExport SEXP _studCRIRT_cppReparInt(SEXP XSEXP, SEXP CON2UNSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< bool >::type CON2UN(CON2UNSEXP);
+    rcpp_result_gen = Rcpp::wrap(cppReparInt(X, CON2UN));
+    return rcpp_result_gen;
+END_RCPP
+}
 // extract_params_idx_cr
 std::vector<unsigned int> extract_params_idx_cr(Eigen::VectorXd THETA_CR, const unsigned int DIM_EXT, const unsigned int NYB, const unsigned int NYA, const unsigned int OPTION);
 RcppExport SEXP _studCRIRT_extract_params_idx_cr(SEXP THETA_CRSEXP, SEXP DIM_EXTSEXP, SEXP NYBSEXP, SEXP NYASEXP, SEXP OPTIONSEXP) {
@@ -196,6 +208,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_hazard", (DL_FUNC) &_studCRIRT_hazard, 6},
     {"_studCRIRT_survival", (DL_FUNC) &_studCRIRT_survival, 7},
     {"_studCRIRT_outcomeLik", (DL_FUNC) &_studCRIRT_outcomeLik, 9},
+    {"_studCRIRT_cppReparInt", (DL_FUNC) &_studCRIRT_cppReparInt, 2},
     {"_studCRIRT_extract_params_idx_cr", (DL_FUNC) &_studCRIRT_extract_params_idx_cr, 5},
     {"_studCRIRT_extract_params_idx_irt", (DL_FUNC) &_studCRIRT_extract_params_idx_irt, 5},
     {"_studCRIRT_extract_params_cr", (DL_FUNC) &_studCRIRT_extract_params_cr, 5},

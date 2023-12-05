@@ -51,6 +51,18 @@ outcomeLik <- function(OUTCOME, YEAR_FIRST, YEAR_LAST, OBSFLAG, THETA_CR, COVARI
     .Call(`_studCRIRT_outcomeLik`, OUTCOME, YEAR_FIRST, YEAR_LAST, OBSFLAG, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
 }
 
+#' Intercepts reparameterisation
+#'
+#' @param X Intercepts or unconstrained parameter values for grades low-to-high.
+#' @param CON2UN TRUE if going from the constrained space to the unconstrained one.
+#'
+#' @returns It allows to go back and forth from constrained intercepts
+#' to unconstrained parameters.
+#' @export
+cppReparInt <- function(X, CON2UN = TRUE) {
+    .Call(`_studCRIRT_cppReparInt`, X, CON2UN)
+}
+
 #' Extract parameters indexes related to the competing risk model
 #' @param THETA_CR Parameter vector related to the competing risk model
 #' @param DIM_EXT Number of external covariates in the competing risk model.
