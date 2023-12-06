@@ -203,6 +203,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// latent_distr
+double latent_distr(const double ABILITY, const double SPEED, const double RHO, const double SIGMA, const bool LOGFLAG);
+RcppExport SEXP _studCRIRT_latent_distr(SEXP ABILITYSEXP, SEXP SPEEDSEXP, SEXP RHOSEXP, SEXP SIGMASEXP, SEXP LOGFLAGSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double >::type ABILITY(ABILITYSEXP);
+    Rcpp::traits::input_parameter< const double >::type SPEED(SPEEDSEXP);
+    Rcpp::traits::input_parameter< const double >::type RHO(RHOSEXP);
+    Rcpp::traits::input_parameter< const double >::type SIGMA(SIGMASEXP);
+    Rcpp::traits::input_parameter< const bool >::type LOGFLAG(LOGFLAGSEXP);
+    rcpp_result_gen = Rcpp::wrap(latent_distr(ABILITY, SPEED, RHO, SIGMA, LOGFLAG));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_hazard", (DL_FUNC) &_studCRIRT_hazard, 6},
@@ -217,6 +232,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_pGrade", (DL_FUNC) &_studCRIRT_pGrade, 6},
     {"_studCRIRT_pTimeExam", (DL_FUNC) &_studCRIRT_pTimeExam, 7},
     {"_studCRIRT_examLik", (DL_FUNC) &_studCRIRT_examLik, 9},
+    {"_studCRIRT_latent_distr", (DL_FUNC) &_studCRIRT_latent_distr, 5},
     {NULL, NULL, 0}
 };
 

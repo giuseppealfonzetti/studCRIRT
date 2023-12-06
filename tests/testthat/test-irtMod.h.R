@@ -1,48 +1,78 @@
 test_that("pGreaterGrades() output", {
 
-  ## External covariates CR
-  dim_ext_cr <- 1L;
+  seed <- 123
 
-  seed <- 1234
+  ## Setup dimensions
+  external_covariates <- 3L     # number of external covariates
+  years_before <- 4L            # number of possible years in the regime without graduation
+  years_after <- 2L             # number of possible years in the regime with graduation
+  grades <- 3L                  # number of grades
+  exams <- 5L                  # number of exams
+
+
+  ## Construct the list
+  params_list <- list()
+
+  # Three main blocks
+  params_list[['CR']] <- list()
+  params_list[['IRT']] <- list()
+  params_list[['LAT']] <- list()
+
+  # Parameter-blocks related to competing risks
+  set.seed(seed)
+  params_list[['CR']][['Dropout']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
+
   set.seed(seed+1)
-  beta_d <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_t <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_g <- rnorm(2 + dim_ext_cr, 0, 1)
+  params_list[['CR']][['Transfer']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
 
-  beta_cr <- list('d' = beta_d, 't' = beta_t, 'g' = beta_g)
-  ## Number of years
-  number_years_before <- 6L
-  number_years_after <- 2L
-
-  ## Year-related intercept
   set.seed(seed+2)
+  params_list[['CR']][['Graduation']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_after)
+  )
 
-  ## year-specific intercepts for `d`, `t` and `g`
-  beta0_d <- rnorm(number_years_before, 0, 1)
-  beta0_t <- rnorm(number_years_before, 0, 1)
-  beta0_g <- rnorm(number_years_after, 0, 1)
-  beta0_cr <- list('d' = beta0_d, 't' = beta0_t, 'g' = beta0_g)
-
-  theta_cr <- c(beta_d, beta_t, beta_g, beta0_d, beta0_t, beta0_g)
-
-  ## Exam-related params
-  grades <- 3L
-  exams <- 3L
-
+  ## Parameter-blocks related to  <-  IRT-modelling
   set.seed(seed+3)
-  alpha <- runif(exams, 0, 5)
-  beta_exams <- list()
-  for(ex in 1:exams){
-    beta_exams[[ex]] <- sort(rnorm(grades, 0, 5), decreasing = T)
-  }
+  params_list[['IRT']][['Exams_slopes']] <- runif(exams, 0, 5)
 
   set.seed(seed+4)
-  gamma <- runif(exams, 0, 5)
+  examsInt <- matrix(0, exams, grades)
+  for(ex in 1:exams){
+    examsInt[ex,] <- sort(rnorm(grades, 0, 5), decreasing = TRUE)
+  }
+  params_list[['IRT']][['Exams_grades_intercepts']] <- examsInt
 
   set.seed(seed+5)
-  lambda <- runif(exams, .1, 3)
+  params_list[['IRT']][['Exams_average_time']] <- rnorm(exams)
 
-  theta_irt <- c(alpha, unlist(beta_exams), gamma, lambda)
+  set.seed(seed+6)
+  params_list[['IRT']][['Exams_variability_time']] <- runif(exams)
+
+  params_list[['LAT']][['Corr']] <- .6
+  params_list[['LAT']][['Speed_variability']] <- 1.5
+
+  theta <- paramsList2vec(PARAMS_LIST = params_list,
+                          DIM_EXT = external_covariates,
+                          NYB = years_before,
+                          NYA = years_after,
+                          N_GRADES = grades,
+                          N_EXAMS = exams)
+
+  theta_irt <- theta[
+    (3*(external_covariates+2) + 2*(years_before) + years_after+1):
+      (3*(external_covariates+2) + 2*(years_before) + years_after + 3*exams + exams*grades + 2)]
 
   set.seed(seed+4)
   abilities <- sort(rnorm(3, 0, 1), decreasing = T)
@@ -58,8 +88,8 @@ test_that("pGreaterGrades() output", {
           ABILITY = abilities[abi_index]
         )
 
-        cf <- alpha[exam]
-        int <- beta_exams[[exam]][grade]
+        cf <- params_list[['IRT']][['Exams_slopes']][exam]
+        int <- params_list[['IRT']][['Exams_grades_intercepts']][exam, grade]
 
         # check probs matches
         expect_equal(
@@ -100,49 +130,79 @@ test_that("pGreaterGrades() output", {
 
 test_that("pGrade() output", {
 
-  ## External covariates CR
-  dim_ext_cr <- 1L;
+  seed <- 123
 
-  seed <- 1234
+  ## Setup dimensions
+  external_covariates <- 3L     # number of external covariates
+  years_before <- 4L            # number of possible years in the regime without graduation
+  years_after <- 2L             # number of possible years in the regime with graduation
+  grades <- 3L                  # number of grades
+  exams <- 5L                  # number of exams
+
+
+  ## Construct the list
+  params_list <- list()
+
+  # Three main blocks
+  params_list[['CR']] <- list()
+  params_list[['IRT']] <- list()
+  params_list[['LAT']] <- list()
+
+  # Parameter-blocks related to competing risks
+  set.seed(seed)
+  params_list[['CR']][['Dropout']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
+
   set.seed(seed+1)
-  beta_d <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_t <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_g <- rnorm(2 + dim_ext_cr, 0, 1)
+  params_list[['CR']][['Transfer']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
 
-  beta_cr <- list('d' = beta_d, 't' = beta_t, 'g' = beta_g)
-  ## Number of years
-  number_years_before <- 6L
-  number_years_after <- 2L
-
-  ## Year-related intercept
   set.seed(seed+2)
+  params_list[['CR']][['Graduation']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_after)
+  )
 
-  ## year-specific intercepts for `d`, `t` and `g`
-  beta0_d <- rnorm(number_years_before, 0, 1)
-  beta0_t <- rnorm(number_years_before, 0, 1)
-  beta0_g <- rnorm(number_years_after, 0, 1)
-  beta0_cr <- list('d' = beta0_d, 't' = beta0_t, 'g' = beta0_g)
-
-  theta_cr <- c(beta_d, beta_t, beta_g, beta0_d, beta0_t, beta0_g)
-
-  ## Exam-related params
-  grades <- 3L
-  exams <- 3L
-
+  ## Parameter-blocks related to exams IRT-modelling
   set.seed(seed+3)
-  alpha <- runif(exams, 0, 5)
-  beta_exams <- list()
-  for(ex in 1:exams){
-    beta_exams[[ex]] <- sort(rnorm(grades, 0, 5), decreasing = T)
-  }
+  params_list[['IRT']][['Exams_slopes']] <- runif(exams, 0, 5)
 
   set.seed(seed+4)
-  gamma <- runif(exams, 0, 5)
+  examsInt <- matrix(0, exams, grades)
+  for(ex in 1:exams){
+    examsInt[ex,] <- sort(rnorm(grades, 0, 5), decreasing = TRUE)
+  }
+  params_list[['IRT']][['Exams_grades_intercepts']] <- examsInt
 
   set.seed(seed+5)
-  lambda <- runif(exams, .1, 3)
+  params_list[['IRT']][['Exams_average_time']] <- rnorm(exams)
 
-  theta_irt <- c(alpha, unlist(beta_exams), gamma, lambda)
+  set.seed(seed+6)
+  params_list[['IRT']][['Exams_variability_time']] <- runif(exams)
+
+  params_list[['LAT']][['Corr']] <- .6
+  params_list[['LAT']][['Speed_variability']] <- 1.5
+
+  theta <- paramsList2vec(PARAMS_LIST = params_list,
+                          DIM_EXT = external_covariates,
+                          NYB = years_before,
+                          NYA = years_after,
+                          N_GRADES = grades,
+                          N_EXAMS = exams)
+
+  theta_irt <- theta[
+    (3*(external_covariates+2) + 2*(years_before) + years_after+1):
+      (3*(external_covariates+2) + 2*(years_before) + years_after + 3*exams + exams*grades + 2)]
 
   set.seed(seed+4)
   abilities <- sort(rnorm(3, 0, 2), decreasing = T)
@@ -151,12 +211,16 @@ test_that("pGrade() output", {
       for (exam in 1:exams) {
 
         if(grade == 0){
-          Rval <- 1 - exp(beta_exams[[exam]][1]+alpha[exam]*abilities[abi_index])/(1+exp(beta_exams[[exam]][1]+alpha[exam]*abilities[abi_index]))
+          Rval <- 1 - exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))
         }else if(grade < grades) {
-          Rval <- exp(beta_exams[[exam]][grade]+alpha[exam]*abilities[abi_index])/(1+exp(beta_exams[[exam]][grade]+alpha[exam]*abilities[abi_index]))-
-            exp(beta_exams[[exam]][grade+1]+alpha[exam]*abilities[abi_index])/(1+exp(beta_exams[[exam]][grade+1]+alpha[exam]*abilities[abi_index]))
+          Rval <- exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))-
+            exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade+1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade+1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))
         }else if(grade == grades){
-          Rval <- exp(beta_exams[[exam]][grade]+alpha[exam]*abilities[abi_index])/(1+exp(beta_exams[[exam]][grade]+alpha[exam]*abilities[abi_index]))
+          Rval <- exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))
         }
         val <- pGrade(
           GRADE = grade,
@@ -179,49 +243,79 @@ test_that("pGrade() output", {
 
 test_that("pTimeExam() output", {
 
-  ## External covariates CR
-  dim_ext_cr <- 1L;
+  seed <- 123
 
-  seed <- 1234
+  ## Setup dimensions
+  external_covariates <- 3L     # number of external covariates
+  years_before <- 4L            # number of possible years in the regime without graduation
+  years_after <- 2L             # number of possible years in the regime with graduation
+  grades <- 3L                  # number of grades
+  exams <- 5L                  # number of exams
+
+
+  ## Construct the list
+  params_list <- list()
+
+  # Three main blocks
+  params_list[['CR']] <- list()
+  params_list[['IRT']] <- list()
+  params_list[['LAT']] <- list()
+
+  # Parameter-blocks related to competing risks
+  set.seed(seed)
+  params_list[['CR']][['Dropout']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
+
   set.seed(seed+1)
-  beta_d <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_t <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_g <- rnorm(2 + dim_ext_cr, 0, 1)
+  params_list[['CR']][['Transfer']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
 
-  beta_cr <- list('d' = beta_d, 't' = beta_t, 'g' = beta_g)
-  ## Number of years
-  number_years_before <- 6L
-  number_years_after <- 2L
-
-  ## Year-related intercept
   set.seed(seed+2)
+  params_list[['CR']][['Graduation']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_after)
+  )
 
-  ## year-specific intercepts for `d`, `t` and `g`
-  beta0_d <- rnorm(number_years_before, 0, 1)
-  beta0_t <- rnorm(number_years_before, 0, 1)
-  beta0_g <- rnorm(number_years_after, 0, 1)
-  beta0_cr <- list('d' = beta0_d, 't' = beta0_t, 'g' = beta0_g)
-
-  theta_cr <- c(beta_d, beta_t, beta_g, beta0_d, beta0_t, beta0_g)
-
-  ## Exam-related params
-  grades <- 3L
-  exams <- 3L
-
+  ## Parameter-blocks related to exams IRT-modelling
   set.seed(seed+3)
-  alpha <- runif(exams, 0, 5)
-  beta_exams <- list()
-  for(ex in 1:exams){
-    beta_exams[[ex]] <- sort(rnorm(grades, 0, 5), decreasing = T)
-  }
+  params_list[['IRT']][['Exams_slopes']] <- runif(exams, 0, 5)
 
   set.seed(seed+4)
-  gamma <- runif(exams, 0, 5)
+  examsInt <- matrix(0, exams, grades)
+  for(ex in 1:exams){
+    examsInt[ex,] <- sort(rnorm(grades, 0, 5), decreasing = TRUE)
+  }
+  params_list[['IRT']][['Exams_grades_intercepts']] <- examsInt
 
   set.seed(seed+5)
-  lambda <- runif(exams, .1, 3)
+  params_list[['IRT']][['Exams_average_time']] <- rnorm(exams)
 
-  theta_irt <- c(alpha, unlist(beta_exams), gamma, lambda)
+  set.seed(seed+6)
+  params_list[['IRT']][['Exams_variability_time']] <- runif(exams)
+
+  params_list[['LAT']][['Corr']] <- .6
+  params_list[['LAT']][['Speed_variability']] <- 1.5
+
+  theta <- paramsList2vec(PARAMS_LIST = params_list,
+                          DIM_EXT = external_covariates,
+                          NYB = years_before,
+                          NYA = years_after,
+                          N_GRADES = grades,
+                          N_EXAMS = exams)
+
+  theta_irt <- theta[
+    (3*(external_covariates+2) + 2*(years_before) + years_after+1):
+      (3*(external_covariates+2) + 2*(years_before) + years_after + 3*exams + exams*grades + 2)]
 
   set.seed(seed+6)
   speeds <- sort(rnorm(3,0,5), decreasing=T)
@@ -231,7 +325,9 @@ test_that("pTimeExam() output", {
     for (day in runif(10, 100, 1000)) {
       for (exam in 1:exams) {
 
-        Rval <- dlnorm(day, gamma[exam]-speeds[speed_index], 1/lambda[exam])
+        Rval <- dlnorm(day,
+                       params_list[['IRT']][['Exams_average_time']][exam]-speeds[speed_index],
+                       1/params_list[['IRT']][['Exams_variability_time']][exam])
         val <- pTimeExam(
           EXAM = exam,
           DAY = day,
@@ -243,7 +339,9 @@ test_that("pTimeExam() output", {
         )
         expect_equal(val, Rval)
 
-        Rval <- plnorm(day, gamma[exam]-speeds[speed_index], 1/lambda[exam])
+        Rval <- plnorm(day,
+                       params_list[['IRT']][['Exams_average_time']][exam]-speeds[speed_index],
+                       1/params_list[['IRT']][['Exams_variability_time']][exam])
         val <- pTimeExam(
           EXAM = exam,
           DAY = day,
@@ -291,49 +389,79 @@ test_that("pTimeExam() output", {
 
 test_that("examLik() output", {
 
-  ## External covariates CR
-  dim_ext_cr <- 1L;
+  seed <- 123
 
-  seed <- 1234
+  ## Setup dimensions
+  external_covariates <- 3L     # number of external covariates
+  years_before <- 4L            # number of possible years in the regime without graduation
+  years_after <- 2L             # number of possible years in the regime with graduation
+  grades <- 3L                  # number of grades
+  exams <- 5L                  # number of exams
+
+
+  ## Construct the list
+  params_list <- list()
+
+  # Three main blocks
+  params_list[['CR']] <- list()
+  params_list[['IRT']] <- list()
+  params_list[['LAT']] <- list()
+
+  # Parameter-blocks related to competing risks
+  set.seed(seed)
+  params_list[['CR']][['Dropout']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
+
   set.seed(seed+1)
-  beta_d <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_t <- rnorm(2 + dim_ext_cr, 0, 1)
-  beta_g <- rnorm(2 + dim_ext_cr, 0, 1)
+  params_list[['CR']][['Transfer']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_before)
+  )
 
-  beta_cr <- list('d' = beta_d, 't' = beta_t, 'g' = beta_g)
-  ## Number of years
-  number_years_before <- 6L
-  number_years_after <- 2L
-
-  ## Year-related intercept
   set.seed(seed+2)
+  params_list[['CR']][['Graduation']] <- list(
+    'Slope_ability' = rnorm(1),
+    'Slope_speed' = rnorm(1),
+    'Slope_covariates' = rnorm(external_covariates),
+    'Intercepts_year' = rnorm(years_after)
+  )
 
-  ## year-specific intercepts for `d`, `t` and `g`
-  beta0_d <- rnorm(number_years_before, 0, 1)
-  beta0_t <- rnorm(number_years_before, 0, 1)
-  beta0_g <- rnorm(number_years_after, 0, 1)
-  beta0_cr <- list('d' = beta0_d, 't' = beta0_t, 'g' = beta0_g)
-
-  theta_cr <- c(beta_d, beta_t, beta_g, beta0_d, beta0_t, beta0_g)
-
-  ## Exam-related params
-  grades <- 3L
-  exams <- 3L
-
+  ## Parameter-blocks related to exams IRT-modelling
   set.seed(seed+3)
-  alpha <- runif(exams, 0, 5)
-  beta_exams <- list()
-  for(ex in 1:exams){
-    beta_exams[[ex]] <- sort(rnorm(grades, 0, 5), decreasing = T)
-  }
+  params_list[['IRT']][['Exams_slopes']] <- runif(exams, 0, 5)
 
   set.seed(seed+4)
-  gamma <- runif(exams, 0, 5)
+  examsInt <- matrix(0, exams, grades)
+  for(ex in 1:exams){
+    examsInt[ex,] <- sort(rnorm(grades, 0, 5), decreasing = TRUE)
+  }
+  params_list[['IRT']][['Exams_grades_intercepts']] <- examsInt
 
   set.seed(seed+5)
-  lambda <- runif(exams, .1, 3)
+  params_list[['IRT']][['Exams_average_time']] <- rnorm(exams)
 
-  theta_irt <- c(alpha, unlist(beta_exams), gamma, lambda)
+  set.seed(seed+6)
+  params_list[['IRT']][['Exams_variability_time']] <- runif(exams)
+
+  params_list[['LAT']][['Corr']] <- .6
+  params_list[['LAT']][['Speed_variability']] <- 1.5
+
+  theta <- paramsList2vec(PARAMS_LIST = params_list,
+                          DIM_EXT = external_covariates,
+                          NYB = years_before,
+                          NYA = years_after,
+                          N_GRADES = grades,
+                          N_EXAMS = exams)
+
+  theta_irt <- theta[
+    (3*(external_covariates+2) + 2*(years_before) + years_after+1):
+      (3*(external_covariates+2) + 2*(years_before) + years_after + 3*exams + exams*grades + 2)]
 
   # set.seed(seed+6)
   # speed <- rnorm(1,0,1)
@@ -348,7 +476,9 @@ test_that("examLik() output", {
         for (exam in 1:exams) {
           for (grade in 1:grades) {
             pG <- pGrade(GRADE = grade, EXAM = exam, THETA_IRT = theta_irt, N_GRADES = grades, N_EXAMS = exams, ABILITY = ability)
-            pT <- dlnorm(day, gamma[exam]-speed, 1/lambda[exam])
+            pT <- dlnorm(day,
+                         params_list[['IRT']][['Exams_average_time']][exam]-speed,
+                         1/params_list[['IRT']][['Exams_variability_time']][exam])
             Rval <- pT*pG
             val <- examLik(
               EXAM = exam,
@@ -364,7 +494,9 @@ test_that("examLik() output", {
             expect_equal(val, Rval)
 
             pG <- pGreaterGrades(GRADE = 1, EXAM = exam, THETA_IRT = theta_irt, N_GRADES = grades, N_EXAMS = exams, ABILITY = ability)
-            pT <- plnorm(day, gamma[exam]-speed, 1/lambda[exam])
+            pT <- plnorm(day,
+                         params_list[['IRT']][['Exams_average_time']][exam]-speed,
+                         1/params_list[['IRT']][['Exams_variability_time']][exam])
             Rval <- 1-pT*pG
             val <- examLik(
               EXAM = exam,

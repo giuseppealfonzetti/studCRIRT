@@ -194,3 +194,16 @@ examLik <- function(EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABI
     .Call(`_studCRIRT_examLik`, EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED)
 }
 
+#' Joint density of speed and ability
+#'
+#' @param ABILITY ability value.
+#' @param SPEED speed value.
+#' @param RHO Latent correlation.
+#' @param SIGMA standard deviation of speed.
+#' @param LOGFLAG `TRUE` for log density.
+#'
+#' @export
+latent_distr <- function(ABILITY, SPEED, RHO, SIGMA, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_latent_distr`, ABILITY, SPEED, RHO, SIGMA, LOGFLAG)
+}
+

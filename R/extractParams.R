@@ -325,14 +325,21 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                                                                                   N_EXAMS = N_EXAMS,
                                                                                   OPTION = 1, EXAM = x)))
   #  Reparametrise intercepts
-  examsGradesInt <- matrix(unlist(lapply(
+  # examsGradesInt <- matrix(unlist(lapply(
+  #   lapply(1:N_EXAMS,
+  #          function(x) extract_params_irt(
+  #            THETA_IRT = theta_irt, N_GRADES = N_GRADES, N_EXAMS = N_EXAMS, OPTION = 2, EXAM = x
+  #          )
+  #   ),
+  #   function(x) reparInt(x, CON2UN = F)
+  # )), N_EXAMS, N_GRADES, byrow = T)
+  examsGradesInt <- matrix(unlist(
     lapply(1:N_EXAMS,
            function(x) extract_params_irt(
              THETA_IRT = theta_irt, N_GRADES = N_GRADES, N_EXAMS = N_EXAMS, OPTION = 2, EXAM = x
            )
-    ),
-    function(x) reparInt(x, CON2UN = F)
-  )), N_EXAMS, N_GRADES, byrow = T)
+    )
+  ), N_EXAMS, N_GRADES, byrow = T)
 
   params_list[['IRT']][['Exams_grades_intercepts']] <- examsGradesInt
   params_list[['IRT']][['Exams_average_time']] <- unlist(lapply(1:N_EXAMS,
@@ -340,11 +347,11 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                                                                                         N_GRADES = N_GRADES,
                                                                                         N_EXAMS = N_EXAMS,
                                                                                         OPTION = 3, EXAM = x)))
-  params_list[['IRT']][['Exams_variability_time']] <- exp(unlist(lapply(1:N_EXAMS,
+  params_list[['IRT']][['Exams_variability_time']] <- unlist(lapply(1:N_EXAMS,
                                                              function(x) extract_params_irt(THETA_IRT = theta_irt,
                                                                                             N_GRADES = N_GRADES,
                                                                                             N_EXAMS = N_EXAMS,
-                                                                                            OPTION = 4, EXAM = x))))
+                                                                                            OPTION = 4, EXAM = x)))
   params_list[['LAT']][['Corr']] <- tanh(theta_lat[1])
   params_list[['LAT']][['Speed_variability']] <- exp(theta_lat[2])
   params_list

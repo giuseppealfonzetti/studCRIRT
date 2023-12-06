@@ -201,6 +201,12 @@ Eigen::VectorXd extract_params_irt(
   std::vector<unsigned int> idx = extract_params_idx_irt(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM);
   Eigen::VectorXd out = THETA_IRT.segment(idx[0], idx[1]);
 
+  // Reparameterisations
+  if(OPTION == 2){
+    out = cppReparInt(out, false);
+  }else if(OPTION == 4){
+    out = out.array().exp();
+  }
   return(out);
 }
 #endif
