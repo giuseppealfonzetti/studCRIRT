@@ -1,26 +1,17 @@
----
-output: github_document
----
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
-)
-```
 
 # studCRIRT
 
 <!-- badges: start -->
-[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![CRAN status](https://www.r-pkg.org/badges/version/studCRIRT)](https://CRAN.R-project.org/package=studCRIRT)
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/studCRIRT)](https://CRAN.R-project.org/package=studCRIRT)
 <!-- badges: end -->
 
-The goal of studCRIRT is to ...
+The goal of studCRIRT is to …
 
 ## Installation
 
@@ -35,7 +26,7 @@ devtools::install_github("giuseppealfonzetti/studCRIRT")
 
 At first, we need to specify the setting dimensions
 
-```{r}
+``` r
 library(studCRIRT)
 ## change the seed to try different draws
 seed <- 123
@@ -49,7 +40,8 @@ exams <- 10L                  # number of exams
 ```
 
 Now we can generate a random vector of paramaters
-```{r}
+
+``` r
 
 # dimension of the parameter vector related to the competing risk model
 dim_cr <- 3*(external_covariates+2) + 2*(years_before) + years_after 
@@ -87,8 +79,10 @@ theta <- paramsList2vec(PARAMS_LIST = params_list,
                         N_EXAMS = exams)
 ```
 
-Generate a the grades and times of a random student for the given parameters
-```{r}
+Generate a the grades and times of a random student for the given
+parameters
+
+``` r
 
 ## read latent parameters from list
 rho <- params_list[['LAT']][['Corr']]
@@ -121,12 +115,23 @@ times_vec <- rngTimes(
 ## Read the year of the last exam
 yle <- round(max(times_vec)/365,0)
 yle
+#> [1] 2
 ```
 
-Finally, we can plot the integrand function for each outcome and year going from `1` to `yle+1`.
-```{r}
+Finally, we can plot the integrand function for each outcome and year
+going from `1` to `yle+1`.
+
+``` r
 library(tidyr)
 library(dplyr)
+#> 
+#> Caricamento pacchetto: 'dplyr'
+#> I seguenti oggetti sono mascherati da 'package:stats':
+#> 
+#>     filter, lag
+#> I seguenti oggetti sono mascherati da 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
 library(ggplot2)
 library(purrr)
 dt <- expand_grid(
@@ -176,6 +181,12 @@ dt_val |>
   geom_raster(aes(fill = scaledIntegrand)) +
   geom_point(data = as_tibble(lat) |> rename(ability = V1, speed = V2), col = 'red')+
   facet_grid(year~outcome)
+#> Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if
+#> `.name_repair` is omitted as of tibble 2.0.0.
+#> ℹ Using compatibility `.name_repair`.
+#> This warning is displayed once every 8 hours.
+#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+#> generated.
 ```
 
-
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />

@@ -8,7 +8,6 @@ outcomeLik(
   OUTCOME,
   YEAR_FIRST,
   YEAR_LAST,
-  OBSFLAG,
   THETA_CR,
   COVARIATES,
   NYB,
@@ -17,13 +16,11 @@ outcomeLik(
 )
 }
 \arguments{
-\item{OUTCOME}{1 for dropout, 2 for transfer, 3 for graduation}
+\item{OUTCOME}{\code{1} for dropout, \code{2} for transfer, \code{3} for graduation. \code{0} if no outcome is observed.}
 
 \item{YEAR_FIRST}{First year to evaluate.}
 
 \item{YEAR_LAST}{Last year to evaluate.}
-
-\item{OBSFLAG}{\code{TRUE} if the outcome is observed, \code{FALSE} otherwise.}
 
 \item{THETA_CR}{Portion of the parameter vector related to the competing risk model}
 

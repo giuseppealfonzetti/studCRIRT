@@ -9,7 +9,7 @@ test_that("pGreaterGrades() output", {
   set.seed(123)
   for (i in 1:5) {
     lat <- rnorm(2)
-    val <- latent_distr(lat[1], lat[2], rho, sig, FALSE)
+    val <- latent_distr(lat[1], lat[2], atanh(rho), log(sig), FALSE)
     Rval <- mvtnorm::dmvnorm(lat, sigma = S, log = F)
     expect_true(abs(val-Rval)<1e-6)
   }

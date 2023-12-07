@@ -18,7 +18,7 @@
 double pGreaterGrades(
   const unsigned int GRADE,
   const unsigned int EXAM,
-  Eigen::VectorXd THETA_IRT,
+  Eigen::VectorXd& THETA_IRT,
   const unsigned int N_GRADES,
   const unsigned int N_EXAMS,
   const double ABILITY
@@ -59,7 +59,7 @@ double pGreaterGrades(
 double pGrade(
     const unsigned int GRADE,
     const unsigned int EXAM,
-    Eigen::VectorXd THETA_IRT,
+    Eigen::VectorXd& THETA_IRT,
     const unsigned int N_GRADES,
     const unsigned int N_EXAMS,
     const double ABILITY
@@ -91,7 +91,7 @@ double pGrade(
 double pTimeExam(
     const unsigned int EXAM,
     const double DAY,
-    Eigen::VectorXd THETA_IRT,
+    Eigen::VectorXd& THETA_IRT,
     const unsigned int N_GRADES,
     const unsigned int N_EXAMS,
     const double SPEED,
@@ -134,7 +134,7 @@ double examLik(
     const unsigned int GRADE,
     const double DAY,
     const bool OBSFLAG,
-    Eigen::VectorXd THETA_IRT,
+    Eigen::VectorXd& THETA_IRT,
     const unsigned int N_GRADES,
     const unsigned int N_EXAMS,
     const double ABILITY,
@@ -155,4 +155,5 @@ double examLik(
   return(out);
 
 }
+
 #endif

@@ -284,7 +284,7 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
 
   # split params
   theta_cr <- THETA[1:(3*(DIM_EXT+2) + 2*(NYB) + NYA)]
-  theta_irt <- THETA[(3*(DIM_EXT+2) + 2*(NYB) + NYA+1):(3*(DIM_EXT+2) + 2*(NYB) + NYA + 3*N_EXAMS + N_EXAMS*N_GRADES + 2)]
+  theta_irt <- THETA[(3*(DIM_EXT+2) + 2*(NYB) + NYA+1):(3*(DIM_EXT+2) + 2*(NYB) + NYA + 3*N_EXAMS + N_EXAMS*N_GRADES )]
   theta_lat <- THETA[(3*(DIM_EXT+2) + 2*(NYB) + NYA + 3*N_EXAMS + N_EXAMS*N_GRADES + 1):(3*(DIM_EXT+2) + 2*(NYB) + NYA +
                                                             3*N_EXAMS + N_EXAMS*N_GRADES + 2)]
 

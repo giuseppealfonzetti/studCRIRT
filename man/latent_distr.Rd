@@ -4,16 +4,16 @@
 \alias{latent_distr}
 \title{Joint density of speed and ability}
 \usage{
-latent_distr(ABILITY, SPEED, RHO, SIGMA, LOGFLAG = FALSE)
+latent_distr(ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG = FALSE)
 }
 \arguments{
 \item{ABILITY}{ability value.}
 
 \item{SPEED}{speed value.}
 
-\item{RHO}{Latent correlation.}
+\item{REPRHO}{atanh transformation of the latent correlation.}
 
-\item{SIGMA}{standard deviation of speed.}
+\item{REPSIGMA}{log standard deviation of speed.}
 
 \item{LOGFLAG}{\code{TRUE} for log density.}
 }

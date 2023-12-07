@@ -18,8 +18,8 @@
 double hazard(
   const unsigned int OUTCOME,
   const unsigned int YEAR,
-  Eigen::VectorXd THETA_CR,
-  Eigen::VectorXd COVARIATES,
+  Eigen::VectorXd& THETA_CR,
+  Eigen::VectorXd& COVARIATES,
   const unsigned int NYB,
   const unsigned int NYA
 ){
@@ -72,21 +72,22 @@ double hazard(
 double survival(
     const unsigned int YEAR_FIRST,
     const unsigned int YEAR_LAST,
-    Eigen::VectorXd THETA_CR,
-    Eigen::VectorXd COVARIATES,
+    Eigen::VectorXd& THETA_CR,
+    Eigen::VectorXd& COVARIATES,
     const unsigned int NYB,
     const unsigned int NYA,
     const unsigned int YEAR_LAST_EXAM = 100
 ){
 
-  double out = 1;
+  double logout = 0, out;
+  // double out = 1;
   if(YEAR_LAST_EXAM > YEAR_LAST){
 
     // Regime where graduation is not possible
     if(YEAR_LAST > NYB) Rcpp::stop("Regime 1 mismatch: `YEAR_LAST` > `NYB`");
 
     for(unsigned int year = YEAR_FIRST; year<=YEAR_LAST; year++){
-      out *= 1 - hazard(1, year, THETA_CR, COVARIATES, NYB, NYA) - hazard(2, year, THETA_CR, COVARIATES, NYB, NYA);
+      logout += log(1 - hazard(1, year, THETA_CR, COVARIATES, NYB, NYA) - hazard(2, year, THETA_CR, COVARIATES, NYB, NYA));
     }
 
   }else if(YEAR_LAST_EXAM <= YEAR_FIRST){
@@ -95,7 +96,7 @@ double survival(
     if((YEAR_LAST - YEAR_LAST_EXAM + 1) > NYA) Rcpp::stop("Regime 2 mismatch: `YEAR_LAST` > `YEAR_LAST_EXAM` + `NYA` + 1");
 
     for(unsigned int year = YEAR_FIRST; year<=YEAR_LAST; year++){
-      out *= 1 - hazard(3, year - YEAR_LAST_EXAM + 1, THETA_CR, COVARIATES, NYB, NYA);
+      logout +=  log(1 - hazard(3, year - YEAR_LAST_EXAM + 1, THETA_CR, COVARIATES, NYB, NYA));
     }
 
   }else if(YEAR_LAST_EXAM <= YEAR_LAST & YEAR_LAST_EXAM > YEAR_FIRST){
@@ -104,23 +105,22 @@ double survival(
     if((YEAR_LAST - YEAR_LAST_EXAM + 1) > NYA) Rcpp::stop("Mixed regime mismatch: `YEAR_LAST` > `YEAR_LAST_EXAM` + `NYA` + 1");
 
     for(unsigned int year = YEAR_FIRST; year < YEAR_LAST_EXAM; year++){
-      out *= 1 - hazard(1, year, THETA_CR, COVARIATES, NYB, NYA) - hazard(2, year, THETA_CR, COVARIATES, NYB, NYA);
+      logout += log(1 - hazard(1, year, THETA_CR, COVARIATES, NYB, NYA) - hazard(2, year, THETA_CR, COVARIATES, NYB, NYA));
     }
     for(unsigned int year = YEAR_LAST_EXAM; year <= YEAR_LAST; year++){
-      out *= 1 - hazard(3, year - YEAR_LAST_EXAM + 1, THETA_CR, COVARIATES, NYB, NYA);
+      logout += log(1 - hazard(3, year - YEAR_LAST_EXAM + 1, THETA_CR, COVARIATES, NYB, NYA));
     }
 
   }
 
-  return(out);
+  return(exp(logout));
  }
 
 //' Evaluate Outcome Likelihood
 //'
-//' @param OUTCOME 1 for dropout, 2 for transfer, 3 for graduation
+//' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
 //' @param YEAR_FIRST First year to evaluate.
 //' @param YEAR_LAST Last year to evaluate.
-//' @param OBSFLAG `TRUE` if the outcome is observed, `FALSE` otherwise.
 //' @param THETA_CR Portion of the parameter vector related to the competing risk model
 //' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
 //' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
@@ -133,22 +133,26 @@ double outcomeLik(
     const unsigned int OUTCOME,
     const unsigned int YEAR_FIRST,
     const unsigned int YEAR_LAST,
-    const bool OBSFLAG,
-    Eigen::VectorXd THETA_CR,
-    Eigen::VectorXd COVARIATES,
+    Eigen::VectorXd& THETA_CR,
+    Eigen::VectorXd& COVARIATES,
     const unsigned int NYB,
     const unsigned int NYA,
     const unsigned int YEAR_LAST_EXAM = 100
 ){
-  double out;
+  double logout;
 
-  if(OBSFLAG){
-    out = survival(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM);
-  }else{
-    out  = survival(YEAR_FIRST, YEAR_LAST-1, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM);
-    out *= hazard(OUTCOME, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA);
+  if(OUTCOME==0){
+    logout = log(survival(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
+  }else if(OUTCOME==1|OUTCOME==2){
+    if(YEAR_LAST_EXAM<=YEAR_LAST) return 0;
+    logout  = log(survival(YEAR_FIRST, YEAR_LAST-1, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
+    logout += log(hazard(OUTCOME, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA));
+  }else if(OUTCOME==3){
+    if(YEAR_LAST_EXAM>YEAR_LAST) return 0;
+    logout  = log(survival(YEAR_FIRST, YEAR_LAST-1, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
+    logout += log(hazard(3, YEAR_LAST-YEAR_LAST_EXAM+1, THETA_CR, COVARIATES, NYB, NYA));
   }
 
-  return out;
+  return exp(logout);
 }
 #endif
