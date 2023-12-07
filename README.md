@@ -67,6 +67,7 @@ params_list <- paramsVec2list(THETA = theta,
 # here you can manually change parameters (chek the list names)
 # I do that just to simulate reasonable data
 params_list[['LAT']][['Corr']] <- .5
+params_list[['LAT']][['Speed_variability']] <- 1.5
 params_list[['IRT']][['Exams_average_time']] <- sapply(sort(rep(1:6, (round(exams/6)+1)))[1:exams], function(x) log(x*180))
 params_list[['IRT']][['Exams_variability_time']] <- runif(exams, 2,10)
 
@@ -115,7 +116,7 @@ times_vec <- rngTimes(
 ## Read the year of the last exam
 yle <- round(max(times_vec)/365,0)
 yle
-#> [1] 3
+#> [1] 4
 ```
 
 Finally, we can plot the integrand function for each outcome and year
