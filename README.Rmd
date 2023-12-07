@@ -126,7 +126,7 @@ yle
 ```
 
 Finally, we can plot the integrand function for each outcome and year going from `1` to `yle+1`.
-```{r}
+```{r integrandVals}
 library(tidyr)
 library(dplyr)
 library(ggplot2)
