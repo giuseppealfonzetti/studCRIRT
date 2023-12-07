@@ -101,8 +101,8 @@ S <- matrix(c(1,rho*sig,rho*sig,sig^2), 2, 2)
 
 ## draw ability, speed and external covariates value 
 set.seed(seed+2)
-lat <- mvtnorm::rmvnorm(1, sigma = S)
-x <- rnorm(external_covariates)
+lat <- mvtnorm::rmvnorm(1, sigma = S) # lat[1] = ability, lat[2] = speed
+x <- rnorm(external_covariates)       # external covariates
 
 ## draw grades and times for all exams
 grades_vec <- rngGrades(
@@ -131,6 +131,8 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(purrr)
+
+# grid for ability and speed divided by outcome and year
 dt <- expand_grid(
   ability = seq(-3,3, by=.25),
   speed = seq(-3,3, by=.25),
@@ -138,6 +140,7 @@ dt <- expand_grid(
   year = 1:(yle+1)
   )
 
+# compute integrand value on the grid
 dt_val <- dt |>
   mutate(
     val = pmap_dbl(list(ability, speed, outcome, year),
@@ -167,6 +170,9 @@ dt_val <- dt |>
     })
   )
 
+# rearrange and plot
+# the integrand value is scaled just for visual purposes to have 
+# similar color-scales across facets
 dt_val |>
   group_by(year, outcome) |>
   mutate(scaledIntegrand = scale(val),
