@@ -124,14 +124,6 @@ going from `1` to `yle+1`.
 ``` r
 library(tidyr)
 library(dplyr)
-#> 
-#> Caricamento pacchetto: 'dplyr'
-#> I seguenti oggetti sono mascherati da 'package:stats':
-#> 
-#>     filter, lag
-#> I seguenti oggetti sono mascherati da 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
 library(ggplot2)
 library(purrr)
 dt <- expand_grid(
@@ -181,12 +173,6 @@ dt_val |>
   geom_raster(aes(fill = scaledIntegrand)) +
   geom_point(data = as_tibble(lat) |> rename(ability = V1, speed = V2), col = 'red')+
   facet_grid(year~outcome)
-#> Warning: The `x` argument of `as_tibble.matrix()` must have unique column names if
-#> `.name_repair` is omitted as of tibble 2.0.0.
-#> ℹ Using compatibility `.name_repair`.
-#> This warning is displayed once every 8 hours.
-#> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-#> generated.
 ```
 
 <img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
