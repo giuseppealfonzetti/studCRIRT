@@ -4,7 +4,15 @@
 \alias{pGreaterGrades}
 \title{Evaluate the probability of grades greater or equal than the reference one}
 \usage{
-pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+pGreaterGrades(
+  GRADE,
+  EXAM,
+  THETA_IRT,
+  N_GRADES,
+  N_EXAMS,
+  ABILITY,
+  LOGFLAG = FALSE
+)
 }
 \arguments{
 \item{GRADE}{Grade used as reference}
@@ -18,6 +26,8 @@ pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
 \item{N_EXAMS}{Number of exams.}
 
 \item{ABILITY}{Ability value.}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \value{
 It returns the probability of obtaining grades higher than \code{GRADE} on exam \code{EXAM}.

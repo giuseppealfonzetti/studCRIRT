@@ -18,7 +18,8 @@ integrand(
   NYA,
   ABILITY,
   SPEED,
-  YEAR_LAST_EXAM = 100L
+  YEAR_LAST_EXAM = 100L,
+  LOGFLAG = FALSE
 )
 }
 \arguments{
@@ -50,7 +51,9 @@ integrand(
 
 \item{SPEED}{Speed value.}
 
-\item{YEAR_LAST_EXAM}{Year at which the all exams are completed for the first time}
+\item{YEAR_LAST_EXAM}{Year at which the all exams are completed for the first time.}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \value{
 It returns the value of the integrand function,

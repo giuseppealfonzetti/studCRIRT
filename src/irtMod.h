@@ -10,6 +10,7 @@
 //' @param N_GRADES Number of grades modelled.
 //' @param N_EXAMS Number of exams.
 //' @param ABILITY Ability value.
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @returns It returns the probability of obtaining grades higher than `GRADE` on exam `EXAM`.
 //'
@@ -21,27 +22,21 @@ double pGreaterGrades(
   Eigen::VectorXd& THETA_IRT,
   const unsigned int N_GRADES,
   const unsigned int N_EXAMS,
-  const double ABILITY
+  const double ABILITY,
+  const bool LOGFLAG = false
 ){
   if(EXAM > N_EXAMS) Rcpp::stop("`EXAM` larger than `N_EXAMS`");
   if(GRADE > N_GRADES) Rcpp::stop("`GRADE` larger than `N_GRADES`");
 
   const double intercept = extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, 2, EXAM)(GRADE-1);
   const double coeff = extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, 1, EXAM)(0);
-  const double expEta = exp(intercept + coeff*ABILITY);
-  const double prob = expEta/(1+expEta);
+  // const double expEta = exp(intercept + coeff*ABILITY);
+  // const double prob = expEta/(1+expEta);
 
-  // // output list
-  // Rcpp::List output =
-  //   Rcpp::List::create(
-  //     Rcpp::Named("intercept") = intercept,
-  //     Rcpp::Named("coef") = coeff,
-  //     Rcpp::Named("prob") = prob,
-  //     // Rcpp::Named("expEta") = expEta,
-  //     Rcpp::Named("out") = out
-  //   );
+  double out = -log1pexp(-intercept - coeff*ABILITY);
+  if(!LOGFLAG) out = exp(out);
 
-  return(prob);
+  return(out);
 }
 
 //' Evaluate the probability of getting a specific grade
@@ -52,6 +47,7 @@ double pGreaterGrades(
 //' @param N_GRADES Number of grades modelled.
 //' @param N_EXAMS Number of exams.
 //' @param ABILITY Ability value.
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @returns It returns the probability of obtaining the grade `GRADE` on exam `EXAM`.
 //' @export
@@ -62,16 +58,29 @@ double pGrade(
     Eigen::VectorXd& THETA_IRT,
     const unsigned int N_GRADES,
     const unsigned int N_EXAMS,
-    const double ABILITY
+    const double ABILITY,
+    const bool LOGFLAG = false
 ){
   double out;
-  if(GRADE==N_GRADES){
-    out = pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
-  }else if(GRADE==0){
-    out = 1 - pGreaterGrades(1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
-  }else if(GRADE<N_GRADES & GRADE >0){
-    out = pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)-pGreaterGrades(GRADE+1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
+
+  if(LOGFLAG){
+    if(GRADE==N_GRADES){
+      out = pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true);
+    }else if(GRADE==0){
+      out = log1mexp(-pGreaterGrades(1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true));
+    }else if(GRADE<N_GRADES & GRADE >0){
+      out = R::logspace_sub(pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true), pGreaterGrades(GRADE+1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true));
+    }
+  }else{
+    if(GRADE==N_GRADES){
+      out = pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
+    }else if(GRADE==0){
+      out = 1 - pGreaterGrades(1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
+    }else if(GRADE<N_GRADES & GRADE >0){
+      out = pGreaterGrades(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)-pGreaterGrades(GRADE+1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
+    }
   }
+
 
   return(out);
 }
@@ -85,6 +94,7 @@ double pGrade(
 //' @param N_EXAMS Number of exams.
 //' @param SPEED speed value.
 //' @param CDFFLAG `TRUE` for c.d.f. of time. `FALSE` for p.d.f.
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @export
 // [[Rcpp::export]]
@@ -95,7 +105,8 @@ double pTimeExam(
     const unsigned int N_GRADES,
     const unsigned int N_EXAMS,
     const double SPEED,
-    const bool CDFFLAG
+    const bool CDFFLAG,
+    const bool LOGFLAG = false
 ){
   std::vector<double> pars(2);
   pars[0] = extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, 3, EXAM)(0);
@@ -104,9 +115,9 @@ double pTimeExam(
   const double sd = 1/pars[1];
   double out;
   if(CDFFLAG){
-    out = R::plnorm(DAY, mean, sd, true, false);
+    out = R::plnorm(DAY, mean, sd, true, LOGFLAG);
   }else{
-    out = R::dlnorm(DAY, mean, sd, false);
+    out = R::dlnorm(DAY, mean, sd, LOGFLAG);
   }
 
   return(out);
@@ -123,6 +134,7 @@ double pTimeExam(
 //' @param N_EXAMS Number of exams.
 //' @param ABILITY ability value.
 //' @param SPEED speed value.
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @returns It returns the probability of observing or not a specific
 //' grade on a given exam before a given day conditioned on ability and speed.
@@ -138,19 +150,33 @@ double examLik(
     const unsigned int N_GRADES,
     const unsigned int N_EXAMS,
     const double ABILITY,
-    const double SPEED
+    const double SPEED,
+    const bool LOGFLAG = false
 ){
-  double out, pExam, pTime;
+  double out, logpExam, logpTime;
 
-  if(OBSFLAG){
-    pExam = pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
-    pTime = pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES,  N_EXAMS, SPEED, false);
-    out = exp(log(pExam)+log(pTime));
+  if(LOGFLAG){
+    if(OBSFLAG){
+      logpExam = pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true);
+      logpTime = pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES,  N_EXAMS, SPEED, false, true);
+      out = logpExam+logpTime;
+    }else{
+      logpExam = pGreaterGrades(1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true);
+      logpTime = pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES,  N_EXAMS, SPEED, true, true);
+      out = log1mexp(-logpExam-logpTime);
+    }
   }else{
-    pExam = pGreaterGrades(1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY);
-    pTime = pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES,  N_EXAMS, SPEED, true);
-    out = 1 - exp(log(pExam)+log(pTime));
+    if(OBSFLAG){
+      logpExam = pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true);
+      logpTime = pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES,  N_EXAMS, SPEED, false, true);
+      out = exp(logpExam+logpTime);
+    }else{
+      logpExam = pGreaterGrades(1, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, true);
+      logpTime = pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES,  N_EXAMS, SPEED, true, true);
+      out = 1 - exp(logpExam+logpTime);
+    }
   }
+
 
   return(out);
 

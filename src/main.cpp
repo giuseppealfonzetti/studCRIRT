@@ -26,10 +26,12 @@
 //' @param NYA Number of years in the graduatable state. Needed for determining how many time-related intercepts.
 //' @param ABILITY Ability value.
 //' @param SPEED Speed value.
-//' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+//' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @returns It returns the value of the integrand function,
 //' given the parameters and the data of a single observation.
+//'
 //' @export
 // [[Rcpp::export]]
 double integrand(
@@ -46,7 +48,8 @@ double integrand(
   const unsigned int NYA,
   const double ABILITY,
   const double SPEED,
-  const unsigned int YEAR_LAST_EXAM = 100
+  const unsigned int YEAR_LAST_EXAM = 100,
+  const bool LOGFLAG = false
 ){
   const unsigned int dim_ext = EXTCOVARIATES.size();
   const unsigned int dim_cr = 3*(dim_ext+2) + 2*(NYB) + NYA;
@@ -62,7 +65,7 @@ double integrand(
   double reparspeedva = THETA(dim_cr+dim_irt+2);
 
 
-  double pLat = latent_distr(ABILITY, SPEED, reparlatcorr, reparspeedva, false);
+  double pLat = latent_distr(ABILITY, SPEED, reparlatcorr, reparspeedva, LOGFLAG);
   double out = pLat;
 
 
@@ -78,13 +81,22 @@ double integrand(
       N_GRADES,
       N_EXAMS,
       ABILITY,
-      SPEED
+      SPEED,
+      LOGFLAG
     );
-    out*=pExams[exam-1];
+    if(LOGFLAG){
+      out+=pExams[exam-1];
+    }else{
+      out*=pExams[exam-1];
+    }
   }
 
-  double pCR = outcomeLik(OUTCOME, 1, YEAR, theta_cr, covariates, NYB, NYA, YEAR_LAST_EXAM);
-  out*= pCR;
+  double pCR = outcomeLik(OUTCOME, 1, YEAR, theta_cr, covariates, NYB, NYA, YEAR_LAST_EXAM, LOGFLAG);
+  if(LOGFLAG){
+    out+=pCR;
+  }else{
+    out*=pCR;
+  }
 
 
   // // output list
@@ -102,3 +114,4 @@ double integrand(
   // );
   return out;
 }
+

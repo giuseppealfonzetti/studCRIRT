@@ -9,12 +9,12 @@
 #' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external covariates
 #' @param NYB number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
 #' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts.
-#'
+#' @param LOGFLAG Set TRUE to return log value.
 #' @returns It returns the hazard probability of the specific outcome and year.
 #'
 #' @export
-hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA) {
-    .Call(`_studCRIRT_hazard`, OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA)
+hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_hazard`, OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA, LOGFLAG)
 }
 
 #' Evaluate survival function given a the range of years of interest
@@ -26,12 +26,13 @@ hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA) {
 #' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
 #' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
 #' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @returns It returns the probability of survival from `YEAR FIRST` to `YEAR_LAST` included.
 #'
 #' @export
-survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L) {
-    .Call(`_studCRIRT_survival`, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
+survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_survival`, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM, LOGFLAG)
 }
 
 #' Evaluate Outcome Likelihood
@@ -43,11 +44,12 @@ survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR
 #' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
 #' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
 #' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
-#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @export
-outcomeLik <- function(OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L) {
-    .Call(`_studCRIRT_outcomeLik`, OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
+outcomeLik <- function(OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_outcomeLik`, OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM, LOGFLAG)
 }
 
 #' Intercepts reparameterisation
@@ -135,12 +137,13 @@ extract_params_irt <- function(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM) {
 #' @param N_GRADES Number of grades modelled.
 #' @param N_EXAMS Number of exams.
 #' @param ABILITY Ability value.
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @returns It returns the probability of obtaining grades higher than `GRADE` on exam `EXAM`.
 #'
 #' @export
-pGreaterGrades <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
-    .Call(`_studCRIRT_pGreaterGrades`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+pGreaterGrades <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_pGreaterGrades`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, LOGFLAG)
 }
 
 #' Evaluate the probability of getting a specific grade
@@ -151,11 +154,12 @@ pGreaterGrades <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
 #' @param N_GRADES Number of grades modelled.
 #' @param N_EXAMS Number of exams.
 #' @param ABILITY Ability value.
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @returns It returns the probability of obtaining the grade `GRADE` on exam `EXAM`.
 #' @export
-pGrade <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
-    .Call(`_studCRIRT_pGrade`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+pGrade <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_pGrade`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, LOGFLAG)
 }
 
 #' Evaluate the c.d.f or p.d.f of the last attempt to an exam
@@ -167,10 +171,11 @@ pGrade <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
 #' @param N_EXAMS Number of exams.
 #' @param SPEED speed value.
 #' @param CDFFLAG `TRUE` for c.d.f. of time. `FALSE` for p.d.f.
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @export
-pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG) {
-    .Call(`_studCRIRT_pTimeExam`, EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG)
+pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_pTimeExam`, EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG, LOGFLAG)
 }
 
 #' Evaluate exam specific likelihood
@@ -184,13 +189,14 @@ pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG) {
 #' @param N_EXAMS Number of exams.
 #' @param ABILITY ability value.
 #' @param SPEED speed value.
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @returns It returns the probability of observing or not a specific
 #' grade on a given exam before a given day conditioned on ability and speed.
 #'
 #' @export
-examLik <- function(EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED) {
-    .Call(`_studCRIRT_examLik`, EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED)
+examLik <- function(EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_examLik`, EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG)
 }
 
 #' Joint density of speed and ability
@@ -223,12 +229,14 @@ latent_distr <- function(ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG = FALSE) {
 #' @param NYA Number of years in the graduatable state. Needed for determining how many time-related intercepts.
 #' @param ABILITY Ability value.
 #' @param SPEED Speed value.
-#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+#' @param LOGFLAG Set TRUE to return log value.
 #'
 #' @returns It returns the value of the integrand function,
 #' given the parameters and the data of a single observation.
+#'
 #' @export
-integrand <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM = 100L) {
-    .Call(`_studCRIRT_integrand`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM)
+integrand <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM = 100L, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_integrand`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM, LOGFLAG)
 }
 

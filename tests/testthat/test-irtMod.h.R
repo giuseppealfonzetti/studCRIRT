@@ -196,7 +196,84 @@ test_that("check pGrade() probability space", {
 
 
       }
-      expect_true(sum(probs)==1)
+      expect_equal(sum(probs),1)
+    }
+
+  }
+
+})
+
+test_that("pGreaterGrades() output", {
+
+
+  set.seed(seed+7)
+  abilities <- sort(rnorm(3, 0, 2), decreasing = T)
+  for (abi_index in 1:length(abilities)) {
+    for (grade in 1:grades) {
+      for (exam in 1:exams) {
+        out <- pGreaterGrades(
+          GRADE = grade,
+          EXAM = exam,
+          THETA_IRT = theta_irt,
+          N_GRADES = grades,
+          N_EXAMS = exams,
+          ABILITY = abilities[abi_index],
+          LOGFLAG = TRUE
+        )
+
+
+        cf <- params_list[['IRT']][['Exams_slopes']][exam]
+        int <- params_list[['IRT']][['Exams_grades_intercepts']][exam, grade]
+
+        # check probs matches
+        expect_equal(
+          out, log(exp(int+cf*abilities[abi_index])/(1+exp(int+cf*abilities[abi_index])))
+        )
+
+
+      }
+    }
+  }
+
+
+})
+
+test_that("check pGrade() log", {
+
+  set.seed(seed+7)
+  abilities <- sort(rnorm(3, 0, 2), decreasing = T)
+  for (abi_index in 1:length(abilities)) {
+    for (grade in 0:grades) {
+      for (exam in 1:exams) {
+
+        if(grade == 0){
+          Rval <- 1 - exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))
+        }else if(grade < grades) {
+          Rval <- exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))-
+            exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade+1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade+1]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))
+        }else if(grade == grades){
+          Rval <- exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index])/
+            (1+exp(params_list[['IRT']][['Exams_grades_intercepts']][exam,grade]+params_list[['IRT']][['Exams_slopes']][exam]*abilities[abi_index]))
+        }
+        val <- pGrade(
+          GRADE = grade,
+          EXAM = exam,
+          THETA_IRT = theta_irt,
+          N_GRADES = grades,
+          N_EXAMS = exams,
+          ABILITY = abilities[abi_index],
+          LOGFLAG = TRUE
+        )
+
+
+        # check numeric output
+        expect_equal(val, log(Rval))
+
+
+      }
     }
 
   }
@@ -320,6 +397,64 @@ test_that("examLik() output", {
               SPEED = speed
             )
             expect_equal(val, Rval)
+          }
+        }
+
+      }
+    }
+  }
+
+
+
+})
+
+test_that("examLik() log output", {
+
+
+
+  set.seed(seed+7)
+  for (ability in rnorm(2,0,1)) {
+    for (speed in rnorm(2,0,1)) {
+      for (day in runif(2, 100, 1000)) {
+        for (exam in 1:exams) {
+          for (grade in 1:grades) {
+            pG <- pGrade(GRADE = grade, EXAM = exam, THETA_IRT = theta_irt, N_GRADES = grades, N_EXAMS = exams, ABILITY = ability)
+            pT <- dlnorm(day,
+                         params_list[['IRT']][['Exams_average_time']][exam]-speed,
+                         1/params_list[['IRT']][['Exams_variability_time']][exam])
+            Rval <- pT*pG
+            val <- examLik(
+              EXAM = exam,
+              GRADE = grade,
+              DAY = day,
+              OBSFLAG = T,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              ABILITY = ability,
+              SPEED = speed,
+              LOGFLAG = TRUE
+            )
+            expect_equal(val, log(Rval))
+
+            pG <- pGreaterGrades(GRADE = 1, EXAM = exam, THETA_IRT = theta_irt, N_GRADES = grades, N_EXAMS = exams, ABILITY = ability)
+            pT <- plnorm(day,
+                         params_list[['IRT']][['Exams_average_time']][exam]-speed,
+                         1/params_list[['IRT']][['Exams_variability_time']][exam])
+            Rval <- 1-pT*pG
+            val <- examLik(
+              EXAM = exam,
+              GRADE = grade,
+              DAY = day,
+              OBSFLAG = F,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              ABILITY = ability,
+              SPEED = speed,
+              LOGFLAG = TRUE
+            )
+            expect_equal(val, log(Rval))
           }
         }
 

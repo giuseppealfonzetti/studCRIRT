@@ -11,7 +11,8 @@ survival(
   COVARIATES,
   NYB,
   NYA,
-  YEAR_LAST_EXAM = 100L
+  YEAR_LAST_EXAM = 100L,
+  LOGFLAG = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ survival(
 \item{NYA}{Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.}
 
 \item{YEAR_LAST_EXAM}{Year at which the all exams are completed for the first time}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \value{
 It returns the probability of survival from \verb{YEAR FIRST} to \code{YEAR_LAST} included.

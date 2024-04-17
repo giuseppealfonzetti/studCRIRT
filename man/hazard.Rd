@@ -4,7 +4,7 @@
 \alias{hazard}
 \title{Evaluate hazard function based on outcome and year}
 \usage{
-hazard(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA)
+hazard(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA, LOGFLAG = FALSE)
 }
 \arguments{
 \item{OUTCOME}{1 for dropout, 2 for transfer, 3 for graduation}
@@ -18,6 +18,8 @@ hazard(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA)
 \item{NYB}{number of years in the non-graduatable state. Needed for determining how many time-related intercepts.}
 
 \item{NYA}{number of years in the graduatable state. Needed for determining how many time-related intercepts.}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \value{
 It returns the hazard probability of the specific outcome and year.

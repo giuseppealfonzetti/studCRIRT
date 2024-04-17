@@ -4,7 +4,7 @@
 \alias{pGrade}
 \title{Evaluate the probability of getting a specific grade}
 \usage{
-pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, LOGFLAG = FALSE)
 }
 \arguments{
 \item{GRADE}{Grade used as reference}
@@ -18,6 +18,8 @@ pGrade(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
 \item{N_EXAMS}{Number of exams.}
 
 \item{ABILITY}{Ability value.}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \value{
 It returns the probability of obtaining the grade \code{GRADE} on exam \code{EXAM}.

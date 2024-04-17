@@ -13,7 +13,8 @@ examLik(
   N_GRADES,
   N_EXAMS,
   ABILITY,
-  SPEED
+  SPEED,
+  LOGFLAG = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ examLik(
 \item{ABILITY}{ability value.}
 
 \item{SPEED}{speed value.}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \value{
 It returns the probability of observing or not a specific

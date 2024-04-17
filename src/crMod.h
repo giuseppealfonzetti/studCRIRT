@@ -10,7 +10,7 @@
 //' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external covariates
 //' @param NYB number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
 //' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts.
-//'
+//' @param LOGFLAG Set TRUE to return log value.
 //' @returns It returns the hazard probability of the specific outcome and year.
 //'
 //' @export
@@ -21,7 +21,8 @@ double hazard(
   Eigen::VectorXd& THETA_CR,
   Eigen::VectorXd& COVARIATES,
   const unsigned int NYB,
-  const unsigned int NYA
+  const unsigned int NYA,
+  const bool LOGFLAG = false
 ){
 
   double out;
@@ -47,9 +48,7 @@ double hazard(
   if(OUTCOME == 3){
     const double int3 = extract_params_cr(THETA_CR, COVARIATES.size()-2, NYB, NYA, 6)(YEAR-1);
     const Eigen::VectorXd beta3 = extract_params_cr(THETA_CR, COVARIATES.size()-2, NYB, NYA, 3);
-    const double expEta3 = exp(int3 + beta3.dot(COVARIATES));
-
-    out = expEta3 /(1+expEta3);
+    out = exp(-log1pexp(- int3 - beta3.dot(COVARIATES)));
   }
 
   return(out);
@@ -64,6 +63,7 @@ double hazard(
 //' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
 //' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
 //' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @returns It returns the probability of survival from `YEAR FIRST` to `YEAR_LAST` included.
 //'
@@ -76,7 +76,8 @@ double survival(
     Eigen::VectorXd& COVARIATES,
     const unsigned int NYB,
     const unsigned int NYA,
-    const unsigned int YEAR_LAST_EXAM = 100
+    const unsigned int YEAR_LAST_EXAM = 100,
+    const bool LOGFLAG = false
 ){
 
   double logout = 0, out;
@@ -113,7 +114,12 @@ double survival(
 
   }
 
-  return(exp(logout));
+  if(LOGFLAG){
+    out = logout;
+  }else{
+    out = exp(logout);
+  }
+  return(out);
  }
 
 //' Evaluate Outcome Likelihood
@@ -125,7 +131,8 @@ double survival(
 //' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
 //' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
 //' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
-//' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+//' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+//' @param LOGFLAG Set TRUE to return log value.
 //'
 //' @export
 // [[Rcpp::export]]
@@ -137,22 +144,32 @@ double outcomeLik(
     Eigen::VectorXd& COVARIATES,
     const unsigned int NYB,
     const unsigned int NYA,
-    const unsigned int YEAR_LAST_EXAM = 100
+    const unsigned int YEAR_LAST_EXAM = 100,
+    const bool LOGFLAG = false
 ){
-  double logout;
+  double logout, out;
 
   if(OUTCOME==0){
     logout = log(survival(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
   }else if(OUTCOME==1|OUTCOME==2){
-    if(YEAR_LAST_EXAM<=YEAR_LAST) return 0;
+    if((YEAR_LAST_EXAM<=YEAR_LAST) & !LOGFLAG) return 0;
+    if((YEAR_LAST_EXAM<=YEAR_LAST) & LOGFLAG) return R_NegInf;
+
     logout  = log(survival(YEAR_FIRST, YEAR_LAST-1, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
     logout += log(hazard(OUTCOME, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA));
   }else if(OUTCOME==3){
-    if(YEAR_LAST_EXAM>YEAR_LAST) return 0;
+    if((YEAR_LAST_EXAM>YEAR_LAST) & !LOGFLAG) return 0;
+    if((YEAR_LAST_EXAM>YEAR_LAST) & LOGFLAG) return R_NegInf;
+
     logout  = log(survival(YEAR_FIRST, YEAR_LAST-1, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM));
     logout += log(hazard(3, YEAR_LAST-YEAR_LAST_EXAM+1, THETA_CR, COVARIATES, NYB, NYA));
   }
 
-  return exp(logout);
+  if(LOGFLAG){
+    out = logout;
+  }else{
+    out = exp(logout);
+  }
+  return(out);
 }
 #endif

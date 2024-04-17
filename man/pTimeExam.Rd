@@ -4,7 +4,16 @@
 \alias{pTimeExam}
 \title{Evaluate the c.d.f or p.d.f of the last attempt to an exam}
 \usage{
-pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG)
+pTimeExam(
+  EXAM,
+  DAY,
+  THETA_IRT,
+  N_GRADES,
+  N_EXAMS,
+  SPEED,
+  CDFFLAG,
+  LOGFLAG = FALSE
+)
 }
 \arguments{
 \item{EXAM}{Exam of interest.}
@@ -20,6 +29,8 @@ pTimeExam(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG)
 \item{SPEED}{speed value.}
 
 \item{CDFFLAG}{\code{TRUE} for c.d.f. of time. \code{FALSE} for p.d.f.}
+
+\item{LOGFLAG}{Set TRUE to return log value.}
 }
 \description{
 Evaluate the c.d.f or p.d.f of the last attempt to an exam
