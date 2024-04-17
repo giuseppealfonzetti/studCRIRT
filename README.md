@@ -11,7 +11,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/studCRIRT)](https://CRAN.R-project.org/package=studCRIRT)
 <!-- badges: end -->
 
-The goal of studCRIRT is to …
+The goal of studCRIRT is …
 
 ## Installation
 

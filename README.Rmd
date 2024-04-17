@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 [![CRAN status](https://www.r-pkg.org/badges/version/studCRIRT)](https://CRAN.R-project.org/package=studCRIRT)
 <!-- badges: end -->
 
-The goal of studCRIRT is to ...
+The goal of studCRIRT is ...
 
 ## Installation
 
