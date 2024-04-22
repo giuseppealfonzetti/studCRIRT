@@ -154,7 +154,7 @@ dtopt <- expand_grid(
                      maxTime <- 365*x4
                      obs_vec <- grades_vec>0&times_vec<maxTime
                      Rfun <- function(PAR){
-                       -integrand(
+                       -complete_likelihood(
                         THETA = theta,
                         EXTCOVARIATES = x,
                         EXAMS_GRADES = grades_vec,
@@ -211,7 +211,7 @@ dt_val <- dt |>
                      maxTime <- 365*x4
                      obs_vec <- grades_vec>0&times_vec<maxTime
                      
-                     integrand(
+                     complete_likelihood(
                         THETA = theta,
                         EXTCOVARIATES = x,
                         EXAMS_GRADES = grades_vec,

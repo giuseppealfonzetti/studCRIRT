@@ -249,6 +249,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// complete_likelihood
+double complete_likelihood(Eigen::VectorXd& THETA, Eigen::VectorXd& EXTCOVARIATES, std::vector<unsigned int>& EXAMS_GRADES, std::vector<double>& EXAMS_DAYS, std::vector<bool>& EXAMS_OBSFLAG, const unsigned int OUTCOME, const unsigned int YEAR, const unsigned int N_GRADES, const unsigned int N_EXAMS, const unsigned int NYB, const unsigned int NYA, const double ABILITY, const double SPEED, const unsigned int YEAR_LAST_EXAM, const bool LOGFLAG);
+RcppExport SEXP _studCRIRT_complete_likelihood(SEXP THETASEXP, SEXP EXTCOVARIATESSEXP, SEXP EXAMS_GRADESSEXP, SEXP EXAMS_DAYSSEXP, SEXP EXAMS_OBSFLAGSEXP, SEXP OUTCOMESEXP, SEXP YEARSEXP, SEXP N_GRADESSEXP, SEXP N_EXAMSSEXP, SEXP NYBSEXP, SEXP NYASEXP, SEXP ABILITYSEXP, SEXP SPEEDSEXP, SEXP YEAR_LAST_EXAMSEXP, SEXP LOGFLAGSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type THETA(THETASEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type EXTCOVARIATES(EXTCOVARIATESSEXP);
+    Rcpp::traits::input_parameter< std::vector<unsigned int>& >::type EXAMS_GRADES(EXAMS_GRADESSEXP);
+    Rcpp::traits::input_parameter< std::vector<double>& >::type EXAMS_DAYS(EXAMS_DAYSSEXP);
+    Rcpp::traits::input_parameter< std::vector<bool>& >::type EXAMS_OBSFLAG(EXAMS_OBSFLAGSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type OUTCOME(OUTCOMESEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type YEAR(YEARSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_GRADES(N_GRADESSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type N_EXAMS(N_EXAMSSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type NYB(NYBSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type NYA(NYASEXP);
+    Rcpp::traits::input_parameter< const double >::type ABILITY(ABILITYSEXP);
+    Rcpp::traits::input_parameter< const double >::type SPEED(SPEEDSEXP);
+    Rcpp::traits::input_parameter< const unsigned int >::type YEAR_LAST_EXAM(YEAR_LAST_EXAMSEXP);
+    Rcpp::traits::input_parameter< const bool >::type LOGFLAG(LOGFLAGSEXP);
+    rcpp_result_gen = Rcpp::wrap(complete_likelihood(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM, LOGFLAG));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_hazard", (DL_FUNC) &_studCRIRT_hazard, 7},
@@ -265,6 +290,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_studCRIRT_examLik", (DL_FUNC) &_studCRIRT_examLik, 10},
     {"_studCRIRT_latent_distr", (DL_FUNC) &_studCRIRT_latent_distr, 5},
     {"_studCRIRT_integrand", (DL_FUNC) &_studCRIRT_integrand, 15},
+    {"_studCRIRT_complete_likelihood", (DL_FUNC) &_studCRIRT_complete_likelihood, 15},
     {NULL, NULL, 0}
 };
 

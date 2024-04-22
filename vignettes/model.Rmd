@@ -1,0 +1,129 @@
+---
+title: "Model specification"
+output: rmarkdown::html_vignette #pdf_document
+vignette: >
+  %\VignetteIndexEntry{Model specification}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Data and assumptions
+**Data**:
+
+* The set of exams in the study plan of student $i$, $\mathcal{P}_i$, which contains $J_i=\lvert\mathcal{P}_i\rvert$ exams.
+* The vector of random grades $\mathbf{X}_{i}=(X_{i1},\dots,X_{iJ_i})^\top$.
+* A fixed vector of thresholds days $\{\nu_0,\nu_1,\nu_2,\dots\}$ such that the day $t$ belongs to the academic year $y_t$ (we write $t\in y_t$) if and only if $\nu_{y_t-1}<t\leq\nu_{y_t}$.
+* The deterministic year $y_i^{\max}$ which represents the last observable year for student $i$. Consequently, the last observable day is assumed to be $\nu_{y_i^{\max}}$.
+* The random times $T_i^o$ and  $\mathbf{T}_i=(T_{i1}^E, \dots, T_{iJ_i}^E)^\top$;
+  + $T_i^o$ is the day during which $O_i$ occurs. We do not observe it exactly since we only observe the related academic year $Y_i^o$.
+  + $T_{ij}^E$ is the day of the last attempt of student $i$ to exam $j$ and it is observed exactly.
+* $C_i=\min\{\nu_{Y_i^o},\nu_{y_i^{\max}}\}$ is the last day observed for unit $i$. 
+* The outcome $O_i\in \mathcal{O}=\{\texttt{g, d, t}\}$, where $\texttt{g}$ stands for graduation,  $\texttt{d}$ for dropout from and $\texttt{t}$ for transfer to another course.
+
+**Censoring assumptions**:
+
+* $Y_i^o$ is censored if $Y_i^o>y_i^{\max}$. Not informative.
+* The pair $(X_{ij},T_{ij}^E)$ is censored if $X_{ij}<18$ or $T_{ij}^E>C_i$.
+
+**Other assumptions:**
+
+* $\begin{bmatrix} \xi \\ \tau \end{bmatrix}\sim\mathcal{N}\left(\begin{bmatrix}0 \\ 0 \end{bmatrix}, \begin{bmatrix} 1, \rho\sigma_\tau \\ \rho\sigma_\tau, \sigma^2_\tau \end{bmatrix}\right)$;
+* $\log T_{ij}^E|\tau \sim \mathcal{N}\left(\gamma_j-\tau, \lambda_j^{-2}\right)$ for all $i=1,\dots,n$ and $j=1,\dots, J_i$.
+* The outcome $O_i$, at day $t$, is observed only at the end of the year, during day $\nu_{y_t}$.
+* Let $\mathcal{O}^{a}= \{\texttt{g}\}$ and $\mathcal{O}^{b}=\{\texttt{d, t}\}$. We assume that, at year $y$, before having completed all exams, the only possible outcomes are $O_i\in\mathcal{O}^{b}$. Similarly, starting from the year when the last exam is taken, the only possible outcome is $O_i = \texttt{g}$.
+* No exam retaking if $X_{ij}\geq 18$.
+* $\dots$
+
+**Derived quantities at given times:**
+
+* **Grades:** 
+  + Let $X_{ij}(t)$ be the grade on exam $j$ during day $t$;
+  + $R_{ij}^E(t)=\mathbf{I}(t\leq C_i, X_{ij}(u) \text{ not observed for } s=1,\dots,t-1)$, i.e. subject $i$ is at risk of passing exam $j$;
+  + $S_{ij}(t)=R_{ij}^E(t)\mathbf{I}(T_{ij}^E=t, X\geq 18)$, i.e. success on exam $j$ during day $t$. Then, $X_{ij}(t)$ is missing if $S_{ij}(t)=0$. Let $\mathbf{S}_i(t)=(S_{i1}(t),\dots, S_{iJ_i}(t))$;
+  
+* **Outcome:** 
+Since we do not observe $T_i^o$ directly, but only through $Y_i^o$, none of the quantities related to $T_i^o$ can be observed directly in the data at a given $t$. Thus, we need to define the year-related quantities:
+
+  + Let $R^{o}_i(y)=\mathbf{I}(y\leq y_{C_i})$ be the indicator denoting if the student is at risk of experiencing an outcome during year $y$. 
+  +  Let $F_i(y)=R^{o}_i(y)\mathbf{I}(y=Y_i^o)$ denote whether the student is experiencing an outcome during year $y$. 
+  + Let $O_i(y)$ denotes the outcome experienced in year $y$.
+
+  It follows that, on a daily base, we can only observed lagged quantities from the previous year. Thus, for the generic day $t$, using the notation $y_t$ to refer to the year which $t$ belongs to, we define:
+      \begin{align*}
+        O_i^*(t) = 
+        \begin{cases}
+            O_i(y_t-1)&\text{if $t<\nu_{y_t}$;}\\
+            O_i(y_t)&\text{if $t=\nu_{y_t}$}
+        \end{cases},
+        \quad\quad
+        F_i^*(t) = 
+        \begin{cases}
+            F_i(y_t-1)&\text{if $t<\nu_{y_t}$;}\\
+            F_i(y_t)&\text{if $t=\nu_{y_t}$}
+        \end{cases},
+    \end{align*}
+
+## Full model
+
+The data observed for each student, during day $t$, is $\mathcal{D}_i(t)=\big\{\mathbf{X}_i(t), \mathbf{S}_i(t), O^*_i(t), F^*_i(t)\big\}$.
+    Thus, history before day $t$ is defined by
+\begin{align*}
+    \mathcal{H}_i(t)=\{\mathcal{D}_i(u), \text{ with $u=1,\dots,t-1$}\}.
+\end{align*}
+Then, we model the joint probability of the data by  recursively conditioning on the past, i.e.
+\begin{align*}
+    \mathcal{L}_i &= \prod_{t=1}^\infty p(\mathcal{D}_i(t)|\mathcal{H}_i(t), \xi, \tau)= \prod_{t=1}^\infty p(O^*_i(t), F^*_i(t)|\mathbf{X}_i(t), \mathbf{S}_i(t), \mathcal{H}_i(t), \xi, \tau)p(\mathbf{X}_i(t), \mathbf{S}_i(t)| \mathcal{H}_i(t), \xi, \tau)\\
+    &= \prod_{t=1}^\infty p( O^*_i(t), F^*_i(t)|\mathbf{X}_i(t), \mathbf{S}_i(t), \mathcal{H}_i(t), \xi, \tau)\prod_{t=1}^\infty p(\mathbf{X}_i(t), \mathbf{S}_i(t)| \mathcal{H}_i(t), \xi, \tau).
+\end{align*}
+Note that $p( O^*_i(t), F^*_i(t)|\mathbf{X}_i(t), \mathbf{S}_i(t), \mathcal{H}_i(t), \xi, \tau)=1$ for all $t\neq \nu_{y_t}$, because both $O^*_i(t), F^*_i(t)$ are known given $\mathcal{H}_i(t)$ if $t<\nu_{y_t}$. Thus, the likelihood can be simplified with 
+\begin{align}
+    \mathcal{L}_i=\prod_{y=1}^\infty p( O_i(y), F_i(y)|\mathbf{X}_i(\nu_y), \mathbf{S}_i(\nu_y), \mathcal{H}_i(\nu_y), \xi, \tau)\prod_{t=1}^\infty p(\mathbf{X}_i(t), \mathbf{S}_i(t)| \mathcal{H}_i(t), \xi, \tau)
+\end{align}
+
+## IRT submodel
+Recall that $\nu_{y_i^{\max}}$ is deterministic and known. This implies that $R^{E}_{ij}(t)$ is always known given $\mathcal{H}_i(t)$ for all $j$. Such consideration can be shown to allow reformulating the infinite product as
+\begin{align}
+    \prod_{t=1}^\infty p(\mathbf{X}_i(t), \mathbf{S}_i(t)| \mathcal{H}_i(t), \xi, \tau) = p(\mathbf{T}_i, \mathbf{X}_i, \mathcal{P}_{i}(C_i)| \xi, \tau)
+\end{align}
+where $\mathcal{P}_{i}(C_i)=\{j\in\mathcal{P}_i\text{ such that  $r_{ij}=1$}\}$ and $r_{ij}=\mathbf{I}(\text{$T_{ij}^E < C_i$ and $X_{ij}\geq 18$})$. Then,
+\begin{align}
+    p(\mathbf{T}_i, \mathbf{X}_i, \mathcal{P}_{i}(t_i)| \xi, \tau) &= \prod_{j=1}^Jp(T_{ij}^E, X_{ij}, r_{ij}| \xi, \tau) = \prod_{j=1}^Jp(T_{ij}^E, X_{ij}| r_{ij}, \xi, \tau) p(r_{ijt_i}| \xi, \tau)\\
+    &=\prod_{j=1}^J\left[\left\{p(T_{ij}^E=t, X_{ij}=x| \xi, \tau)\right\}^{r_{ij}}\left\{p(r_{ij}=0| \xi, \tau)\right\}^{1-r_{ij}}\right]\notag
+\end{align}
+where
+\begin{align}
+    p(T_{ij}^E=t, X_{ij}=x| \xi, \tau) &= p(T_{ij}^E = t| \tau)p(X_{ij}^E = x| \xi);\\
+    p(r_{ij}=0| \xi, \tau)&=1-p(X_{ij}\geq 18|\tau)p(T_{ij}^E\leq T_i|\tau)
+\end{align}
+
+and
+\begin{align}
+    p(X_{ij}=x|\xi)&= P(X_{ij} \geq x |\xi) - P(X_{ij} \geq x + 1|\xi);\\
+    P(X_{ij} \geq x |\xi)& =\frac{\exp(\alpha_j \xi + \beta_{jx})}{1+\exp(\alpha_j \xi + \beta_{jx})}.
+\end{align}
+
+## Competing risk submodel
+Let $L_i(t)=\mathbf{I}\big(\sum_{j\in\mathcal{P}_i}\sum_{u}^{t}S_{ij}(u) = J_i\big)$ indicates if the student $i$ has passed all the exams by day $t$. Then, it can be shown that the competing risk conditional submodel can be rewritten as
+
+
+\begin{align}
+    &\prod_{y=1}^\infty p( O_i(y), F_i(y)|\mathbf{X}_i(\nu_y), \mathbf{S}_i(\nu_y), \mathcal{H}_i(\nu_y), \xi, \tau)=\prod_{y=1}^\infty p(O_i(y), F_i(y)|L_i(\nu_y), \mathcal{H}_i(\nu_y), \xi, \tau) = \notag\\
+    &\quad=\prod_{y=1}^\infty\Bigg\{1-R^o_i(y)(1-L_i(\nu_y))\sum_{k\in\mathcal{O}^{(b)}}\lambda_{ik}(y|\xi,\tau)-R^o_i(y)L_i(\nu_y)\lambda_{i\texttt{g}}(y|\xi,\tau)\Bigg\}^{1-F_i(y)}\left\{\prod_{k\in\mathcal{O}}\lambda_{ik}(y|\xi,\tau)^{F_i(y)\mathbf{I}(O_i=k)}\right\}\notag,
+\end{align}
+with $\lambda_{ik}(y|\xi, \tau)$ being the outcome-specific hazard function, with $k\in\mathcal{O}$. Namely
+\begin{align}
+    \lambda_{ik}(y|\xi, \tau)=
+    \begin{cases}
+        \frac{\exp(\beta_{0yk}+\beta_{\xi k}\xi + \beta_{\tau k}\tau))}{1+\sum_{u\in \mathcal{O}^{(b)}}\exp(\beta_{0yu}+\xi \beta_{\xi u} + \tau \beta_{\tau u})},&\text{if $k\in \mathcal{O}^{(b)}$;}\\
+        \\
+        \frac{\exp(\beta_{0y\texttt{g}}+\beta_{\xi \texttt{g}}\xi + \beta_{\tau  \texttt{g}}\tau))}{1+\exp(\beta_{0y\texttt{g}}+\xi \beta_{\xi \texttt{g}} + \tau \beta_{\tau \texttt{g}})},&\text{if $k=\texttt{g}$.}
+    \end{cases}
+\end{align}
+When plugging in the data for observation $i$, academic years range from $y=1,\dots,y_{C_i}$. Thus,  $R^o_i(y)=1$ for all $y=1,\dots,y_{C_i}$ while $F_i(y)=0$ for $y=1,\dots,y_{C_i}-1$.
