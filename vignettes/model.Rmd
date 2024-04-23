@@ -31,7 +31,7 @@ library(studCRIRT)
 **Censoring assumptions**:
 
 * $Y_i^o$ is censored if $Y_i^o>y_i^{\max}$. Not informative.
-* The pair $(X_{ij},T_{ij}^E)$ is censored if $X_{ij}<18$ or $T_{ij}^E>C_i$.
+* The pair $(X_{ij},T_{ij}^E)$ is censored if $R_{ij}=0$, with $R_{ij}=\mathbf{I}(\text{$T_{ij}^E < C_i$ and $X_{ij}\geq 18$})$
 
 **Other assumptions:**
 
@@ -46,14 +46,14 @@ library(studCRIRT)
 
 * **Grades:** 
   + Let $X_{ij}(t)$ be the grade on exam $j$ during day $t$;
-  + $R_{ij}^E(t)=\mathbf{I}(t\leq C_i, X_{ij}(u) \text{ not observed for } s=1,\dots,t-1)$, i.e. subject $i$ is at risk of passing exam $j$;
-  + $S_{ij}(t)=R_{ij}^E(t)\mathbf{I}(T_{ij}^E=t, X\geq 18)$, i.e. success on exam $j$ during day $t$. Then, $X_{ij}(t)$ is missing if $S_{ij}(t)=0$. Let $\mathbf{S}_i(t)=(S_{i1}(t),\dots, S_{iJ_i}(t))$;
+  + $Z_{ij}^E(t)=\mathbf{I}(t\leq C_i, X_{ij}(u) \text{ not observed for } s=1,\dots,t-1)$, i.e. subject $i$ is at risk of passing exam $j$;
+  + $S_{ij}(t)=Z_{ij}^E(t)\mathbf{I}(T_{ij}^E=t, X\geq 18)$, i.e. success on exam $j$ during day $t$. Then, $X_{ij}(t)$ is missing if $S_{ij}(t)=0$. Let $\mathbf{S}_i(t)=(S_{i1}(t),\dots, S_{iJ_i}(t))$;
   
 * **Outcome:** 
 Since we do not observe $T_i^o$ directly, but only through $Y_i^o$, none of the quantities related to $T_i^o$ can be observed directly in the data at a given $t$. Thus, we need to define the year-related quantities:
 
-  + Let $R^{o}_i(y)=\mathbf{I}(y\leq y_{C_i})$ be the indicator denoting if the student is at risk of experiencing an outcome during year $y$. 
-  +  Let $F_i(y)=R^{o}_i(y)\mathbf{I}(y=Y_i^o)$ denote whether the student is experiencing an outcome during year $y$. 
+  + Let $Z^{o}_i(y)=\mathbf{I}(y\leq y_{C_i})$ be the indicator denoting if the student is at risk of experiencing an outcome during year $y$. 
+  +  Let $F_i(y)=Z^{o}_i(y)\mathbf{I}(y=Y_i^o)$ denote whether the student is experiencing an outcome during year $y$. 
   + Let $O_i(y)$ denotes the outcome experienced in year $y$.
 
   It follows that, on a daily base, we can only observed lagged quantities from the previous year. Thus, for the generic day $t$, using the notation $y_t$ to refer to the year which $t$ belongs to, we define:
@@ -91,17 +91,17 @@ Note that $p( O^*_i(t), F^*_i(t)|\mathbf{X}_i(t), \mathbf{S}_i(t), \mathcal{H}_i
 ## IRT submodel
 Recall that $\nu_{y_i^{\max}}$ is deterministic and known. This implies that $R^{E}_{ij}(t)$ is always known given $\mathcal{H}_i(t)$ for all $j$. Such consideration can be shown to allow reformulating the infinite product as
 \begin{align}
-    \prod_{t=1}^\infty p(\mathbf{X}_i(t), \mathbf{S}_i(t)| \mathcal{H}_i(t), \xi, \tau) = p(\mathbf{T}_i, \mathbf{X}_i, \mathcal{P}_{i}(C_i)| \xi, \tau) &= \prod_{j=1}^Jp(T_{ij}^E, X_{ij}, r_{ij}| \xi, \tau)
+    \prod_{t=1}^\infty p(\mathbf{X}_i(t), \mathbf{S}_i(t)| \mathcal{H}_i(t), \xi, \tau) = p(\mathbf{T}_i, \mathbf{X}_i, \mathcal{P}_{i}(C_i)| \xi, \tau) &= \prod_{j=1}^Jp(T_{ij}^E, X_{ij}, R_{ij}| \xi, \tau)
 \end{align}
-where $\mathcal{P}_{i}(C_i)=\{j\in\mathcal{P}_i\text{ such that  $r_{ij}=1$}\}$, $r_{ij}=\mathbf{I}(\text{$T_{ij}^E < C_i$ and $X_{ij}\geq 18$})$. The likelihood contribution of the single exam (see `examLik()`) can be written as 
+where $\mathcal{P}_{i}(C_i)=\{j\in\mathcal{P}_i\text{ such that  $R_{ij}=1$}\}$. The likelihood contribution of the single exam (see `examLik()`) can be written as 
 \begin{align}
-    p(T_{ij}^E, X_{ij}, r_{ij}| \xi, \tau) &= p(T_{ij}^E, X_{ij}| r_{ij}, \xi, \tau) p(r_{ijt_i}| \xi, \tau)\\
-    &=\left\{p(T_{ij}^E=t, X_{ij}=x| \xi, \tau)\right\}^{r_{ij}}\left\{p(r_{ij}=0| \xi, \tau)\right\}^{1-r_{ij}}\notag
+    p(T_{ij}^E, X_{ij}, R_{ij}| \xi, \tau) &= p(T_{ij}^E, X_{ij}| R_{ij}, \xi, \tau) p(R_{ij}| \xi, \tau)\\
+    &=\left\{p(T_{ij}^E=t, X_{ij}=x| \xi, \tau)\right\}^{R_{ij}}\left\{p(R_{ij}=0| \xi, \tau)\right\}^{1-R_{ij}}\notag
 \end{align}
 where
 \begin{align}
     p(T_{ij}^E=t, X_{ij}=x| \xi, \tau) &= p(T_{ij}^E = t| \tau)p(X_{ij}^E = x| \xi);\\
-    p(r_{ij}=0| \xi, \tau)&=1-p(X_{ij}\geq 18|\tau)p(T_{ij}^E\leq T_i|\tau)
+    p(R_{ij}=0| \xi, \tau)&=1-p(X_{ij}\geq 18|\tau)p(T_{ij}^E\leq T_i|\tau)
 \end{align}
 
 while grades probabilities (see `pGreaterGrades()` and `pGrade()`) are modelled via
@@ -116,7 +116,7 @@ Let $L_i(t)=\mathbf{I}\big(\sum_{j\in\mathcal{P}_i}\sum_{u}^{t}S_{ij}(u) = J_i\b
 
 \begin{align}
     &\prod_{y=1}^\infty p( O_i(y), F_i(y)|\mathbf{X}_i(\nu_y), \mathbf{S}_i(\nu_y), \mathcal{H}_i(\nu_y), \xi, \tau)=\prod_{y=1}^\infty p(O_i(y), F_i(y)|L_i(\nu_y), \mathcal{H}_i(\nu_y), \xi, \tau) = \notag\\
-    &\quad=\prod_{y=1}^\infty\Bigg\{1-R^o_i(y)(1-L_i(\nu_y))\sum_{k\in\mathcal{O}^{(b)}}\lambda_{ik}(y|\xi,\tau)-R^o_i(y)L_i(\nu_y)\lambda_{i\texttt{g}}(y|\xi,\tau)\Bigg\}^{1-F_i(y)}\left\{\prod_{k\in\mathcal{O}}\lambda_{ik}(y|\xi,\tau)^{F_i(y)\mathbf{I}(O_i=k)}\right\}\notag,
+    &\quad=\prod_{y=1}^\infty\Bigg\{1-Z^o_i(y)(1-L_i(\nu_y))\sum_{k\in\mathcal{O}^{(b)}}\lambda_{ik}(y|\xi,\tau)-Z^o_i(y)L_i(\nu_y)\lambda_{i\texttt{g}}(y|\xi,\tau)\Bigg\}^{1-F_i(y)}\left\{\prod_{k\in\mathcal{O}}\lambda_{ik}(y|\xi,\tau)^{F_i(y)\mathbf{I}(O_i=k)}\right\}\notag,
 \end{align}
 with $\lambda_{ik}(y|\xi, \tau)$ being the outcome-specific hazard function (see `hazard()`), with $k\in\mathcal{O}$. Namely
 \begin{align}
