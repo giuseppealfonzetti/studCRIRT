@@ -94,7 +94,7 @@ for (r in 1:nrow(dt)) {
   obs_vec <- grades_vec>0&times_vec<maxTime
 
   test_that('check complete data likelihood', {
-    v1 <- integrand(
+    v1 <- complete_likelihood(
       THETA = theta,
       EXTCOVARIATES = x,
       EXAMS_GRADES = grades_vec,
@@ -127,35 +127,35 @@ for (r in 1:nrow(dt)) {
       ABILITY = dt$ability[r],
       SPEED = dt$speed[r],
       YEAR_LAST_EXAM = yle,
-      LOGFLAG = TRUE
+      LOGFLAG = FALSE
     )
 
-    expect_equal(v1, v2)
+    expect_equal(exp(v1), v2)
   })
 }
 
-r <- 1
-maxTime <- 365*dt$year[r]
-obs_vec <- grades_vec>0&times_vec<maxTime
-Rfun <- function(LAT){
-  complete_likelihood(
-    THETA = theta,
-    EXTCOVARIATES = x,
-    EXAMS_GRADES = grades_vec,
-    EXAMS_DAYS = times_vec,
-    EXAMS_OBSFLAG = obs_vec,
-    OUTCOME = dt$outcome[r],
-    YEAR = dt$year[r],
-    N_GRADES = grades,
-    N_EXAMS = exams,
-    NYB = years_before,
-    NYA = years_after,
-    ABILITY = LAT[1],
-    SPEED = LAT[2],
-    YEAR_LAST_EXAM = yle,
-    LOGFLAG = FALSE
-  )
-}
+# r <- 1
+# maxTime <- 365*dt$year[r]
+# obs_vec <- grades_vec>0&times_vec<maxTime
+# Rfun <- function(LAT){
+#   complete_likelihood(
+#     THETA = theta,
+#     EXTCOVARIATES = x,
+#     EXAMS_GRADES = grades_vec,
+#     EXAMS_DAYS = times_vec,
+#     EXAMS_OBSFLAG = obs_vec,
+#     OUTCOME = dt$outcome[r],
+#     YEAR = dt$year[r],
+#     N_GRADES = grades,
+#     N_EXAMS = exams,
+#     NYB = years_before,
+#     NYA = years_after,
+#     ABILITY = LAT[1],
+#     SPEED = LAT[2],
+#     YEAR_LAST_EXAM = yle,
+#     LOGFLAG = FALSE
+#   )
+# }
 # marginal(
 #   THETA = theta,
 #   EXTCOVARIATES = x,

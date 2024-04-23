@@ -212,33 +212,7 @@ latent_distr <- function(ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG = FALSE) {
     .Call(`_studCRIRT_latent_distr`, ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG)
 }
 
-#' Evaluate the integrand function
-#'
-#' @param THETA Suitable parameter vector as provided by \link{paramsList2vec}().
-#' @param EXTCOVARIATES External covariates.
-#' @param EXAMS_GRADES Vector of grades.
-#' @param EXAMS_DAYS Vector of times.
-#' @param EXAMS_OBSFLAG Vector of booleans.`TRUE` elements represent observed exams. `FALSE` elements the unobserved ones.
-#' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
-#' @param YEAR Year of evaluation.
-#' @param N_GRADES Number of grades modelled.
-#' @param N_EXAMS Number of exams modelled
-#' @param NYB Number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
-#' @param NYA Number of years in the graduatable state. Needed for determining how many time-related intercepts.
-#' @param ABILITY Ability value.
-#' @param SPEED Speed value.
-#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
-#' @param LOGFLAG Set TRUE to return log value.
-#'
-#' @returns It returns the value of the integrand function,
-#' given the parameters and the data of a single observation.
-#'
-#' @export
-integrand <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM = 100L, LOGFLAG = FALSE) {
-    .Call(`_studCRIRT_integrand`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM, LOGFLAG)
-}
-
-#' Evaluate the integrand function
+#' Evaluate the complete data likelihood function
 #'
 #' @param THETA Suitable parameter vector as provided by \link{paramsList2vec}().
 #' @param EXTCOVARIATES External covariates.

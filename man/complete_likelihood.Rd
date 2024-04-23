@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{complete_likelihood}
 \alias{complete_likelihood}
-\title{Evaluate the integrand function}
+\title{Evaluate the complete data likelihood function}
 \usage{
 complete_likelihood(
   THETA,
@@ -58,5 +58,5 @@ It returns the value of the integrand function,
 given the parameters and the data of a single observation.
 }
 \description{
-Evaluate the integrand function
+Evaluate the complete data likelihood function
 }
