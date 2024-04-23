@@ -1,9 +1,9 @@
 Package: studCRIRT
-Title: What the Package Does (One Line, Title Case)
+Title: Analyse student careers with a flexible Competing Risk IRT model.
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+    person("Giuseppe", "Alfonzetti", , "giuseppe.alfonzetti@uniud.it", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-6118-6553"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Suggests: 
@@ -15,7 +15,7 @@ Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-URL: https://github.com/giuseppealfonzetti/studCRIRT
+URL: https://github.com/giuseppealfonzetti/studCRIRT, https://giuseppealfonzetti.github.io/studCRIRT/
 BugReports: https://github.com/giuseppealfonzetti/studCRIRT/issues
 LinkingTo: 
     Rcpp,
