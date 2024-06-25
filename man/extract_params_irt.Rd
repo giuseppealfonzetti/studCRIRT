@@ -17,7 +17,7 @@ extract_params_irt(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM)
 \code{2} for exam-grade intercepts, \code{3} for time-mean parameter,
 \code{4} for time-var parameter.}
 
-\item{EXAM}{exam of interest. Posible values in \code{1:N_EXAMS}.}
+\item{EXAM}{exam of interest. Possible values in \code{1:N_EXAMS}.}
 }
 \description{
 Extract parameters related to the IRT model

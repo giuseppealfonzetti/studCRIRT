@@ -371,6 +371,7 @@ test_that("examLik() output", {
               EXAM = exam,
               GRADE = grade,
               DAY = day,
+              MAX_DAY = day,
               OBSFLAG = T,
               THETA_IRT = theta_irt,
               N_GRADES = grades,
@@ -389,6 +390,7 @@ test_that("examLik() output", {
               EXAM = exam,
               GRADE = grade,
               DAY = day,
+              MAX_DAY = day,
               OBSFLAG = F,
               THETA_IRT = theta_irt,
               N_GRADES = grades,
@@ -427,6 +429,7 @@ test_that("examLik() log output", {
               EXAM = exam,
               GRADE = grade,
               DAY = day,
+              MAX_DAY = day,
               OBSFLAG = T,
               THETA_IRT = theta_irt,
               N_GRADES = grades,
@@ -446,6 +449,7 @@ test_that("examLik() log output", {
               EXAM = exam,
               GRADE = grade,
               DAY = day,
+              MAX_DAY = day,
               OBSFLAG = F,
               THETA_IRT = theta_irt,
               N_GRADES = grades,
@@ -464,4 +468,299 @@ test_that("examLik() log output", {
 
 
 
+})
+
+test_that("pGreaterGrades() log extreme ability", {
+
+
+  set.seed(seed+7)
+  abilities <- sort(c(1000,-1000), decreasing = T)
+  for (abi_index in 1:length(abilities)) {
+    for (grade in 1:grades) {
+      for (exam in 1:exams) {
+        prob <- pGreaterGrades(
+          GRADE = grade,
+          EXAM = exam,
+          THETA_IRT = theta_irt,
+          N_GRADES = grades,
+          N_EXAMS = exams,
+          ABILITY = abilities[abi_index],
+          LOGFLAG = TRUE
+        )
+
+        # check for finite values
+        expect_true(is.finite(prob))
+
+      }
+    }
+  }
+
+
+})
+
+test_that("pGrade() log extreme ability", {
+
+
+  set.seed(seed+7)
+  abilities <- sort(c(1000,-1000), decreasing = T)
+  for (abi_index in 1:length(abilities)) {
+    for (grade in 1:grades) {
+      for (exam in 1:exams) {
+        prob <- pGrade(
+          GRADE = 1,
+          EXAM = exam,
+          THETA_IRT = theta_irt,
+          N_GRADES = grades,
+          N_EXAMS = exams,
+          ABILITY = abilities[abi_index],
+          LOGFLAG=TRUE
+        )
+
+        # check for finite values
+        expect_true(is.finite(prob))
+
+      }
+    }
+  }
+
+
+})
+
+test_that("pTimeExam() log extreme speed", {
+
+  set.seed(seed+7)
+  speeds <- sort(c(1000, -1000), decreasing=T)
+
+  set.seed(seed+7)
+  for (speed_index in 1:length(speeds)) {
+    for (day in runif(10, 100, 1000)) {
+      for (exam in 1:exams) {
+
+
+        val <- pTimeExam(
+          EXAM = exam,
+          DAY = day,
+          THETA_IRT = theta_irt,
+          N_GRADES = grades,
+          N_EXAMS = exams,
+          SPEED = speeds[speed_index],
+          CDFFLAG = F,
+          LOGFLAG = TRUE
+        )
+        expect_true(is.finite(val))
+
+        val <- pTimeExam(
+          EXAM = exam,
+          DAY = day,
+          THETA_IRT = theta_irt,
+          N_GRADES = grades,
+          N_EXAMS = exams,
+          SPEED = speeds[speed_index],
+          CDFFLAG = T,
+          LOGFLAG = TRUE
+        )
+        expect_true(is.finite(val))
+
+
+
+
+      }
+    }
+
+  }
+
+
+})
+
+test_that("examLik() log output extreme latent vars", {
+
+
+
+  set.seed(seed+7)
+  for (ability in c(1000, -1000)) {
+    for (speed in c(1000, -1000)) {
+      for (day in runif(2, 100, 1000)) {
+        for (exam in 1:exams) {
+          for (grade in 1:grades) {
+
+            val1 <- pTimeExam(
+              EXAM = exam,
+              DAY = day,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              SPEED = speed,
+              CDFFLAG = F,
+              LOGFLAG = TRUE
+            )
+            expect_true(is.finite(val1))
+            val2 <- pTimeExam(
+              EXAM = exam,
+              DAY = day,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              SPEED = speed,
+              CDFFLAG = T,
+              LOGFLAG = TRUE
+            )
+            expect_true(is.finite(val2))
+
+            val3 <- pGrade(
+              GRADE = grade,
+              EXAM = exam,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              ABILITY = ability,
+              LOGFLAG = TRUE
+            )
+            expect_true(is.finite(val3))
+            val4 <- pGreaterGrades(
+              GRADE = grade,
+              EXAM = exam,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              ABILITY = ability,
+              LOGFLAG = T
+            )
+            expect_true(is.finite(val4))
+            val <- examLik(
+              EXAM = exam,
+              GRADE = grade,
+              DAY = day,
+              MAX_DAY = day,
+              OBSFLAG = T,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              ABILITY = ability,
+              SPEED = speed,
+              LOGFLAG = TRUE
+            )
+            expect_true(is.finite(val))
+
+
+            val <- examLik(
+              EXAM = exam,
+              GRADE = grade,
+              DAY = day,
+              MAX_DAY = day,
+              OBSFLAG = F,
+              THETA_IRT = theta_irt,
+              N_GRADES = grades,
+              N_EXAMS = exams,
+              ABILITY = ability,
+              SPEED = speed,
+              LOGFLAG = TRUE
+            )
+            expect_true(is.finite(val))
+          }
+        }
+
+      }
+    }
+  }
+
+
+
+})
+
+test_that("test irt_conditional() output", {
+n <- 5
+
+#### sim lat ####
+L <- paramsVec2Chol(THETA = theta,
+                    DIM_EXT = external_covariates,
+                    NYB = years_before,
+                    NYA = years_after,
+                    N_GRADES = grades,
+                    N_EXAMS = exams)
+set.seed(123)
+latMat <- matrix(mvtnorm::rmvnorm(n, sigma = L%*%t(L)), n, 2)
+
+#### sim times ####
+dayMat <- matrix(0, n, exams)
+for (i in 1:n) {
+  for (e in 1:exams) {
+    dayMat[i,e] <- exp(
+      rnorm(1,
+            mean = params_list$IRT$Exams_average_time[e]-latMat[i,2],
+            sd = 1/params_list$IRT$Exams_variability_time[e])
+    )
+  }
+}
+
+
+
+
+#### sim grades ####
+gradesMat <- matrix(0, n, exams)
+
+for (i in 1:n) {
+  for (e in 1:exams) {
+    #linear predictor exams X grades
+    linp <- matrix(params_list$IRT$Exams_slopes * latMat[i,1], exams, grades) + params_list$IRT$Exams_grades_intercepts
+
+    # probabilities of greater grades
+    pgg <- exp(linp)/(1+exp(linp))
+
+    # probabilities of grades
+    pg <- cbind(pgg[,1:(grades-1)] - pgg[,2:grades], pgg[,grades])
+    gradesMat[i,e] <- which(rmultinom(n = 1, size=1, prob = c(1-sum(pg[e, ]), pg[e, ]))==1)-1
+
+  }
+}
+
+
+
+#### mat to-do ####
+todoMat <- matrix(1, n, e)
+#### mat obs ####
+year <- 3
+obsMat <- (dayMat<=3*365) * (gradesMat!=0)
+gradesMat <- gradesMat*obsMat
+dayMat <- dayMat*obsMat
+
+
+
+
+
+
+#### checks ####
+rfun <- function(PAR, ID){
+  irt_conditional(THETA = PAR,
+                  EXAMS_GRADES = gradesMat[ID,],
+                  EXAMS_DAYS = dayMat[ID,],
+                  EXAMS_OBSFLAG = obsMat[ID,],
+                  EXAMS_SET = todoMat[ID,],
+                  YEAR = year,
+                  N_GRADES = grades,
+                  N_EXAMS = exams,
+                  NYB = years_before,
+                  NYA = years_after,
+                  DIM_EXT = external_covariates,
+                  ABILITY = latMat[ID,1],
+                  SPEED = latMat[ID,2])$ll
+}
+
+for (i in 1:n) {
+  val <- irt_conditional(THETA = theta,
+                         EXAMS_GRADES = gradesMat[i,],
+                         EXAMS_DAYS = dayMat[i,],
+                         EXAMS_OBSFLAG = obsMat[i,],
+                         EXAMS_SET = todoMat[i,],
+                         YEAR = year,
+                         N_GRADES = grades,
+                         N_EXAMS = exams,
+                         NYB = years_before,
+                         NYA = years_after,
+                         DIM_EXT = external_covariates,
+                         ABILITY = latMat[i,1],
+                         SPEED = latMat[i,2])$gr
+  Rval <- numDeriv::grad(func = rfun, x = theta, ID = i)
+  expect_equal(val, Rval)
+
+}
 })

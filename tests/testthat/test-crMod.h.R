@@ -139,7 +139,8 @@ test_that("hazard() log output", {
       THETA_CR = theta_cr,
       COVARIATES = covariates,
       NYB = years_before,
-      NYA = years_after
+      NYA = years_after,
+      LOGFLAG = TRUE
     )
 
     haz_t <- hazard(
@@ -148,7 +149,8 @@ test_that("hazard() log output", {
       THETA_CR = theta_cr,
       COVARIATES = covariates,
       NYB = years_before,
-      NYA = years_after
+      NYA = years_after,
+      LOGFLAG = TRUE
     )
 
     parsBlock <- params_list[['CR']][['Dropout']]
@@ -161,8 +163,8 @@ test_that("hazard() log output", {
       exp(
         parsBlock[['Intercepts_year']][year] +
           t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%covariates))
-    expect_equal(haz_d, expeta_d/(1+expeta_d+expeta_t))
-    expect_equal(haz_t, expeta_t/(1+expeta_d+expeta_t))
+    expect_equal(haz_d, log(expeta_d/(1+expeta_d+expeta_t)))
+    expect_equal(haz_t, log(expeta_t/(1+expeta_d+expeta_t)))
   }
 
   for (year in 1:years_after) {
@@ -172,7 +174,8 @@ test_that("hazard() log output", {
       THETA_CR = theta_cr,
       COVARIATES = covariates,
       NYB = years_before,
-      NYA = years_after
+      NYA = years_after,
+      LOGFLAG = TRUE
     )
 
     parsBlock <- params_list[['CR']][['Graduation']]
@@ -180,103 +183,8 @@ test_that("hazard() log output", {
       exp(
         parsBlock[['Intercepts_year']][year] +
           t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%covariates))
-    expect_equal(haz_g, expeta_g/(1+expeta_g))
+    expect_equal(haz_g, log(expeta_g/(1+expeta_g)))
   }
-})
-test_that("survival() output", {
-
-  # (YEAR_FIRST, YEAR_LAST, YEAR_LAST_EXAM)
-  triplets <- list(
-    c(2, 5, 6), # regime before
-    c(3, 4, 3), # regime after
-    c(3, 5, 5), # mixed
-    c(3, 5, 4), # mixed
-    c(3, 4, 3), # regime after
-    c(1, 4, 5) # regime before
-  )
-
-  for (trp_idx in 1:length(triplets)) {
-    val <- survival(
-      YEAR_FIRST = triplets[[trp_idx]][1],
-      YEAR_LAST = triplets[[trp_idx]][2],
-      THETA_CR = theta_cr,
-      COVARIATES = covariates,
-      NYB = years_before,
-      NYA = years_after,
-      YEAR_LAST_EXAM = triplets[[trp_idx]][3]
-    )
-
-    if(triplets[[trp_idx]][3] > triplets[[trp_idx]][2]){
-
-      Rval <- 1
-      for (year in triplets[[trp_idx]][1]:triplets[[trp_idx]][2]) {
-        Rval <- Rval * (1 - hazard(
-          OUTCOME = 1,
-          YEAR = year,
-          THETA_CR = theta_cr,
-          COVARIATES = covariates,
-          NYB = years_before,
-          NYA = years_after
-        ) - hazard(
-          OUTCOME = 2,
-          YEAR = year,
-          THETA_CR = theta_cr,
-          COVARIATES = covariates,
-          NYB = years_before,
-          NYA = years_after
-        ))
-      }
-      expect_equal(val, Rval)
-
-    }else if(triplets[[trp_idx]][3] <= triplets[[trp_idx]][1]){
-
-      Rval <- 1
-      for (year in triplets[[trp_idx]][1]:triplets[[trp_idx]][2]) {
-        Rval <- Rval * (1 - hazard(
-          OUTCOME = 3,
-          YEAR = year - triplets[[trp_idx]][3] + 1,
-          THETA_CR = theta_cr,
-          COVARIATES = covariates,
-          NYB = years_before,
-          NYA = years_after
-        ))
-      }
-      expect_equal(val, Rval)
-    }else if((triplets[[trp_idx]][3] > triplets[[trp_idx]][1]) & (triplets[[trp_idx]][3] <= triplets[[trp_idx]][2])){
-
-      Rval <- 1
-      for (year in triplets[[trp_idx]][1]:(triplets[[trp_idx]][3]-1)) {
-        Rval <- Rval * (1 - hazard(
-          OUTCOME = 1,
-          YEAR = year,
-          THETA_CR = theta_cr,
-          COVARIATES = covariates,
-          NYB = years_before,
-          NYA = years_after
-        ) - hazard(
-          OUTCOME = 2,
-          YEAR = year,
-          THETA_CR = theta_cr,
-          COVARIATES = covariates,
-          NYB = years_before,
-          NYA = years_after
-        ))
-      }
-      for (year in triplets[[trp_idx]][3]:triplets[[trp_idx]][2]) {
-        Rval <- Rval * (1 - hazard(
-          OUTCOME = 3,
-          YEAR = year - triplets[[trp_idx]][3] + 1,
-          THETA_CR = theta_cr,
-          COVARIATES = covariates,
-          NYB = years_before,
-          NYA = years_after
-        ))
-      }
-      expect_equal(val, Rval)
-
-    }
-  }
-
 })
 test_that("survival() log output", {
 
@@ -374,7 +282,101 @@ test_that("survival() log output", {
   }
 
 })
+test_that("survival() output", {
 
+  # (YEAR_FIRST, YEAR_LAST, YEAR_LAST_EXAM)
+  triplets <- list(
+    c(2, 5, 6), # regime before
+    c(3, 4, 3), # regime after
+    c(3, 5, 5), # mixed
+    c(3, 5, 4), # mixed
+    c(3, 4, 3), # regime after
+    c(1, 4, 5) # regime before
+  )
+
+  for (trp_idx in 1:length(triplets)) {
+    val <- survival(
+      YEAR_FIRST = triplets[[trp_idx]][1],
+      YEAR_LAST = triplets[[trp_idx]][2],
+      THETA_CR = theta_cr,
+      COVARIATES = covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = triplets[[trp_idx]][3]
+    )
+
+    if(triplets[[trp_idx]][3] > triplets[[trp_idx]][2]){
+
+      Rval <- 1
+      for (year in triplets[[trp_idx]][1]:triplets[[trp_idx]][2]) {
+        Rval <- Rval * (1 - hazard(
+          OUTCOME = 1,
+          YEAR = year,
+          THETA_CR = theta_cr,
+          COVARIATES = covariates,
+          NYB = years_before,
+          NYA = years_after
+        ) - hazard(
+          OUTCOME = 2,
+          YEAR = year,
+          THETA_CR = theta_cr,
+          COVARIATES = covariates,
+          NYB = years_before,
+          NYA = years_after
+        ))
+      }
+      expect_equal(val, Rval)
+
+    }else if(triplets[[trp_idx]][3] <= triplets[[trp_idx]][1]){
+
+      Rval <- 1
+      for (year in triplets[[trp_idx]][1]:triplets[[trp_idx]][2]) {
+        Rval <- Rval * (1 - hazard(
+          OUTCOME = 3,
+          YEAR = year - triplets[[trp_idx]][3] + 1,
+          THETA_CR = theta_cr,
+          COVARIATES = covariates,
+          NYB = years_before,
+          NYA = years_after
+        ))
+      }
+      expect_equal(val, Rval)
+    }else if((triplets[[trp_idx]][3] > triplets[[trp_idx]][1]) & (triplets[[trp_idx]][3] <= triplets[[trp_idx]][2])){
+
+      Rval <- 1
+      for (year in triplets[[trp_idx]][1]:(triplets[[trp_idx]][3]-1)) {
+        Rval <- Rval * (1 - hazard(
+          OUTCOME = 1,
+          YEAR = year,
+          THETA_CR = theta_cr,
+          COVARIATES = covariates,
+          NYB = years_before,
+          NYA = years_after
+        ) - hazard(
+          OUTCOME = 2,
+          YEAR = year,
+          THETA_CR = theta_cr,
+          COVARIATES = covariates,
+          NYB = years_before,
+          NYA = years_after
+        ))
+      }
+      for (year in triplets[[trp_idx]][3]:triplets[[trp_idx]][2]) {
+        Rval <- Rval * (1 - hazard(
+          OUTCOME = 3,
+          YEAR = year - triplets[[trp_idx]][3] + 1,
+          THETA_CR = theta_cr,
+          COVARIATES = covariates,
+          NYB = years_before,
+          NYA = years_after
+        ))
+      }
+      expect_equal(val, Rval)
+
+    }
+  }
+
+})
 test_that("check outcomeLik() probability space",{
 
 
@@ -466,6 +468,408 @@ test_that("check outcomeLik() probability space",{
   rowSums(probsMarg)
   expect_equal(rowSums(probsMarg), rep(1, years_after))
   expect_equal(sum(probs[,-1])+probs[years_after,1], 1)
+
+
+})
+test_that("hazard() log extreme latent vars", {
+
+  extr_covariates <- covariates
+  extr_covariates[c(1,2)] <- c(-1000, -1000)
+
+
+  for (year in 1:years_before) {
+    haz_d <- hazard(
+      OUTCOME = 1,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_d))
+
+    haz_t <- hazard(
+      OUTCOME = 2,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_t))
+
+
+    parsBlock <- params_list[['CR']][['Dropout']]
+    expeta_d <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    parsBlock <- params_list[['CR']][['Transfer']]
+    expeta_t <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    # expect_equal(exp(haz_d), expeta_d/(1+expeta_d+expeta_t))
+    # expect_equal(exp(haz_t), expeta_t/(1+expeta_d+expeta_t))
+  }
+
+  for (year in 1:years_after) {
+    haz_g <- hazard(
+      OUTCOME = 3,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_g))
+
+
+    parsBlock <- params_list[['CR']][['Graduation']]
+    expeta_g <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    # expect_equal(haz_g, expeta_g/(1+expeta_g))
+  }
+
+  extr_covariates <- covariates
+  extr_covariates[c(1,2)] <- c(1000, 1000)
+
+
+  for (year in 1:years_before) {
+    haz_d <- hazard(
+      OUTCOME = 1,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_d))
+
+    haz_t <- hazard(
+      OUTCOME = 2,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_t))
+
+
+    parsBlock <- params_list[['CR']][['Dropout']]
+    expeta_d <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    parsBlock <- params_list[['CR']][['Transfer']]
+    expeta_t <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    # expect_equal(exp(haz_d), expeta_d/(1+expeta_d+expeta_t))
+    # expect_equal(exp(haz_t), expeta_t/(1+expeta_d+expeta_t))
+  }
+
+  for (year in 1:years_after) {
+    haz_g <- hazard(
+      OUTCOME = 3,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_g))
+
+
+    parsBlock <- params_list[['CR']][['Graduation']]
+    expeta_g <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    # expect_equal(haz_g, expeta_g/(1+expeta_g))
+  }
+
+  extr_covariates <- covariates
+  extr_covariates[c(1,2)] <- c(-1000, 1000)
+
+
+  for (year in 1:years_before) {
+    haz_d <- hazard(
+      OUTCOME = 1,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_d))
+
+    haz_t <- hazard(
+      OUTCOME = 2,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_t))
+
+
+    parsBlock <- params_list[['CR']][['Dropout']]
+    expeta_d <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    parsBlock <- params_list[['CR']][['Transfer']]
+    expeta_t <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    # expect_equal(exp(haz_d), expeta_d/(1+expeta_d+expeta_t))
+    # expect_equal(exp(haz_t), expeta_t/(1+expeta_d+expeta_t))
+  }
+
+  for (year in 1:years_after) {
+    haz_g <- hazard(
+      OUTCOME = 3,
+      YEAR = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = T
+    )
+    expect_true(is.finite(haz_g))
+
+
+    parsBlock <- params_list[['CR']][['Graduation']]
+    expeta_g <- as.numeric(
+      exp(
+        parsBlock[['Intercepts_year']][year] +
+          t(c(parsBlock[['Slope_ability']], parsBlock[['Slope_speed']], parsBlock[['Slope_covariates']]))%*%extr_covariates))
+    # expect_equal(haz_g, expeta_g/(1+expeta_g))
+  }
+})
+test_that("survival() log extreme latent vars", {
+
+  # (YEAR_FIRST, YEAR_LAST, YEAR_LAST_EXAM)
+  triplets <- list(
+    c(2, 5, 6), # regime before
+    c(3, 4, 3), # regime after
+    c(3, 5, 5), # mixed
+    c(3, 5, 4), # mixed
+    c(3, 4, 3), # regime after
+    c(1, 4, 5) # regime before
+  )
+
+  extr_covariates <- covariates
+  extr_covariates[c(1,2)] <- c(1000, 1000)
+
+  for (trp_idx in 1:length(triplets)) {
+    val <- survival(
+      YEAR_FIRST = triplets[[trp_idx]][1],
+      YEAR_LAST = triplets[[trp_idx]][2],
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = triplets[[trp_idx]][3],
+      LOGFLAG = TRUE
+    )
+    expect_true(is.finite(val))
+
+  }
+
+
+  extr_covariates[c(1,2)] <- c(-1000, -1000)
+
+  for (trp_idx in 1:length(triplets)) {
+    val <- survival(
+      YEAR_FIRST = triplets[[trp_idx]][1],
+      YEAR_LAST = triplets[[trp_idx]][2],
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = triplets[[trp_idx]][3],
+      LOGFLAG = TRUE
+    )
+    expect_true(is.finite(val))
+
+
+
+  }
+
+})
+test_that("outcomeLik() log extreme latent vars", {
+
+
+  extr_covariates <- covariates
+  extr_covariates[c(1,2)] <- c(1000, 1000)
+
+  for (year in 1:years_before) {
+    for (outcome in 0:2) {
+      val <- outcomeLik(
+        OUTCOME = outcome,
+        YEAR_FIRST = 1,
+        YEAR_LAST = year,
+        THETA_CR = theta_cr,
+        COVARIATES = extr_covariates,
+        NYB = years_before,
+        NYA = years_after,
+        LOGFLAG = TRUE
+      )
+      expect_true(is.finite(val))
+    }
+  }
+
+  yle <- 3
+  for (year in yle:(yle+years_after-1)) {
+    val <- outcomeLik(
+      OUTCOME = 0,
+      YEAR_FIRST = yle,
+      YEAR_LAST = year,
+      THETA_CR = theta_cr,
+      COVARIATES = covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = yle,
+      LOGFLAG = TRUE
+    )
+    expect_true(is.finite(val))
+
+    val <- outcomeLik(
+      OUTCOME = 3,
+      YEAR_FIRST = yle,
+      YEAR_LAST = year,
+      THETA_CR = theta_cr,
+      COVARIATES = covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = yle,
+      LOGFLAG = TRUE
+      )
+    expect_true(is.finite(val))
+
+
+  }
+
+  extr_covariates <- covariates
+  extr_covariates[c(1,2)] <- c(-1000, -1000)
+
+  for (year in 1:years_before) {
+    for (outcome in 0:2) {
+      survival(
+        YEAR_FIRST = 1,
+        YEAR_LAST = year,
+        THETA_CR = theta_cr,
+        COVARIATES = extr_covariates,
+        NYB = years_before,
+        NYA = years_after,
+        YEAR_LAST_EXAM = 100,
+        LOGFLAG = TRUE
+      )
+
+      val <- outcomeLik(
+        OUTCOME = outcome,
+        YEAR_FIRST = 1,
+        YEAR_LAST = year,
+        THETA_CR = theta_cr,
+        COVARIATES = extr_covariates,
+        NYB = years_before,
+        NYA = years_after,
+        LOGFLAG = TRUE
+      )
+      expect_true(is.finite(val))
+    }
+  }
+
+  yle <- 3
+
+  for (year in yle:(yle+years_after-1)) {
+    val <- outcomeLik(
+      OUTCOME = 0,
+      YEAR_FIRST = yle,
+      YEAR_LAST = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = yle,
+      LOGFLAG = TRUE
+    )
+    expect_true(is.finite(val))
+
+    val <- outcomeLik(
+      OUTCOME = 3,
+      YEAR_FIRST = yle,
+      YEAR_LAST = year,
+      THETA_CR = theta_cr,
+      COVARIATES = extr_covariates,
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = yle,
+      LOGFLAG = TRUE
+    )
+    expect_true(is.finite(val))
+
+
+  }
+
+
+})
+test_that("check outcomeLik() gradient ll",{
+
+  rfun <- function(PAR){
+    outcomeLik(
+      OUTCOME = outcome,
+      YEAR_FIRST = 1,
+      YEAR_LAST = year,
+      THETA_CR = PAR,
+      COVARIATES = covariates,
+      NYB = years_before,
+      NYA = years_after,
+      LOGFLAG = TRUE
+    )
+  }
+
+  gr_rfun <- function(PAR){
+    grl_outcomeLik(
+      OUTCOME = outcome,
+      YEAR_FIRST = 1,
+      YEAR_LAST = year,
+      THETA_CR = PAR,
+      COVARIATES = covariates,
+      NYB = years_before,
+      NYA = years_after
+    )
+  }
+
+  probsMarg <- matrix(NA, years_before, 3)
+  probs <- matrix(NA, years_before, 3)
+  for (year in 1:years_before) {
+    for (outcome in 0:2) {
+      grval <- gr_rfun(PAR = theta_cr)
+      Rval <- numDeriv::grad(func = rfun, x = theta_cr)
+      expect_equal(grval, Rval)
+    }
+  }
+
+
+
+
 
 
 })

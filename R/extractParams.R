@@ -220,7 +220,13 @@ paramsList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                  # as.vector(t(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])),
                  PARAMS_LIST[['IRT']][['Exams_average_time']],
                  log(PARAMS_LIST[['IRT']][['Exams_variability_time']]))
-  theta_lat <- c(atanh(PARAMS_LIST[['LAT']][['Corr']]), log(PARAMS_LIST[['LAT']][['Speed_variability']]))
+
+  rho <- PARAMS_LIST[['LAT']][['Corr']]
+  sig <- PARAMS_LIST[['LAT']][['Speed_variability']]
+  Slat <- matrix(c(1,rho*sig,rho*sig,sig^2),2,2)
+  L <- t(chol(Slat))
+  theta_lat <- c(L[2,1], L[2,2])
+  # theta_lat <- c(atanh(PARAMS_LIST[['LAT']][['Corr']]), log(PARAMS_LIST[['LAT']][['Speed_variability']]))
   theta <- c(theta_cr, theta_irt, theta_lat)
 
   return(theta)
@@ -234,6 +240,9 @@ paramsList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
 #' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts in the competing risk model.
 #' @param N_GRADES number of grades modelled.
 #' @param N_EXAMS number of exams.
+#' @param LABS_EXAMS optional label for exams
+#' @param LABS_GRADES optional label for grades
+#' @param LABS_COVARIATES optional label for covariates
 #'
 #' @returns Given a proper unconstrained parameter vector, it returns a
 #' list of the model parameters.
@@ -267,7 +276,7 @@ paramsList2vec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
 #'
 #'
 #' @export
-paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
+paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS, LABS_EXAMS=NULL, LABS_GRADES=NULL, LABS_COVARIATES=NULL){
 
   # Check input type
   if(!is.numeric(THETA)) stop('`THETA` not accepted.')
@@ -305,18 +314,22 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
     'Slope_covariates' = beta_d[3:(2+DIM_EXT)],
     'Intercepts_year' = extract_params_cr(THETA_CR = theta_cr, DIM_EXT = DIM_EXT, NYB = NYB, NYA = NYA, OPTION = 4)
   )
+  names(params_list[['CR']][['Dropout']][['Slope_covariates']]) <- LABS_COVARIATES
   params_list[['CR']][['Transfer']] <- list(
     'Slope_ability' = beta_t[1],
     'Slope_speed' = beta_t[2],
     'Slope_covariates' = beta_t[3:(2+DIM_EXT)],
     'Intercepts_year' = extract_params_cr(THETA_CR = theta_cr, DIM_EXT = DIM_EXT, NYB = NYB, NYA = NYA, OPTION = 5)
   )
+  names(params_list[['CR']][['Transfer']][['Slope_covariates']]) <- LABS_COVARIATES
+
   params_list[['CR']][['Graduation']] <- list(
     'Slope_ability' = beta_g[1],
     'Slope_speed' = beta_g[2],
     'Slope_covariates' = beta_g[3:(2+DIM_EXT)],
     'Intercepts_year' = extract_params_cr(THETA_CR = theta_cr, DIM_EXT = DIM_EXT, NYB = NYB, NYA = NYA, OPTION = 6)
   )
+  names(params_list[['CR']][['Graduation']][['Slope_covariates']]) <- LABS_COVARIATES
 
   # IRT parameters
   params_list[['IRT']][['Exams_slopes']] <- unlist(lapply(1:N_EXAMS,
@@ -324,6 +337,7 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                                                                                   N_GRADES = N_GRADES,
                                                                                   N_EXAMS = N_EXAMS,
                                                                                   OPTION = 1, EXAM = x)))
+  names(params_list[['IRT']][['Exams_slopes']]) <- LABS_EXAMS
   #  Reparametrise intercepts
   # examsGradesInt <- matrix(unlist(lapply(
   #   lapply(1:N_EXAMS,
@@ -340,6 +354,8 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
            )
     )
   ), N_EXAMS, N_GRADES, byrow = T)
+  rownames(examsGradesInt) <- LABS_EXAMS
+  colnames(examsGradesInt) <- LABS_GRADES
 
   params_list[['IRT']][['Exams_grades_intercepts']] <- examsGradesInt
   params_list[['IRT']][['Exams_average_time']] <- unlist(lapply(1:N_EXAMS,
@@ -347,12 +363,127 @@ paramsVec2list <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
                                                                                         N_GRADES = N_GRADES,
                                                                                         N_EXAMS = N_EXAMS,
                                                                                         OPTION = 3, EXAM = x)))
+  names(params_list[['IRT']][['Exams_average_time']]) <- LABS_EXAMS
   params_list[['IRT']][['Exams_variability_time']] <- unlist(lapply(1:N_EXAMS,
                                                              function(x) extract_params_irt(THETA_IRT = theta_irt,
                                                                                             N_GRADES = N_GRADES,
                                                                                             N_EXAMS = N_EXAMS,
                                                                                             OPTION = 4, EXAM = x)))
-  params_list[['LAT']][['Corr']] <- tanh(theta_lat[1])
-  params_list[['LAT']][['Speed_variability']] <- exp(theta_lat[2])
+  names(params_list[['IRT']][['Exams_variability_time']]) <- LABS_EXAMS
+
+  L <- matrix(c(1,theta_lat[1],0, theta_lat[2]),2,2)
+  Slat <- L %*% t(L)
+  params_list[['LAT']][['Corr']] <- Slat[2,1]/sqrt(Slat[2,2])
+  params_list[['LAT']][['Speed_variability']] <- sqrt(Slat[2,2])
   params_list
 }
+
+#' @export
+paramsVec2Chol <- function(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS, LABS_EXAMS=NULL, LABS_GRADES=NULL, LABS_COVARIATES=NULL){
+
+  # Check input type
+  if(!is.numeric(THETA)) stop('`THETA` not accepted.')
+  if(!is.integer(DIM_EXT)) stop('`DIM_EXT` not accepted.')
+  if(!is.integer(NYB)) stop('`NYB` not accepted.')
+  if(!is.integer(NYA)) stop('`NYA` not accepted.')
+  if(!is.integer(N_GRADES)) stop('`N_GRADES` not accepted.')
+  if(!is.integer(N_EXAMS)) stop('`N_EXAMS` not accepted.')
+
+  # Check dimension
+  dim <- (3*(DIM_EXT+2) + 2*(NYB) + NYA) +
+    3*N_EXAMS + N_EXAMS*N_GRADES + 2
+  if(dim!=length(THETA)) stop('THETA dimension does not match with info provided by `DIM_EXT`, `NYB`, `NYA`, `N_GRADES`, `N_EXAMS`')
+
+  # split params
+  theta_lat <- THETA[(3*(DIM_EXT+2) + 2*(NYB) + NYA + 3*N_EXAMS + N_EXAMS*N_GRADES + 1):(3*(DIM_EXT+2) + 2*(NYB) + NYA +
+                                                                                           3*N_EXAMS + N_EXAMS*N_GRADES + 2)]
+  L <- matrix(c(1,theta_lat[1], 0,  theta_lat[2]),2,2)
+  return(L)
+}
+
+
+#' @export
+paramsList2Ivec <- function(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS){
+
+  # handle errors
+  checkerList2vec(PARAMS_LIST, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS)
+
+
+  # Construct the parameter vector
+  theta_cr <- c(PARAMS_LIST[['CR']][['Dropout']][['Slope_ability']],
+                PARAMS_LIST[['CR']][['Dropout']][['Slope_speed']],
+                PARAMS_LIST[['CR']][['Dropout']][['Slope_covariates']],
+                PARAMS_LIST[['CR']][['Transfer']][['Slope_ability']],
+                PARAMS_LIST[['CR']][['Transfer']][['Slope_speed']],
+                PARAMS_LIST[['CR']][['Transfer']][['Slope_covariates']],
+                PARAMS_LIST[['CR']][['Graduation']][['Slope_ability']],
+                PARAMS_LIST[['CR']][['Graduation']][['Slope_speed']],
+                PARAMS_LIST[['CR']][['Graduation']][['Slope_covariates']],
+                PARAMS_LIST[['CR']][['Dropout']][['Intercepts_year']],
+                PARAMS_LIST[['CR']][['Transfer']][['Intercepts_year']],
+                PARAMS_LIST[['CR']][['Graduation']][['Intercepts_year']])
+  theta_irt <- c(PARAMS_LIST[['IRT']][['Exams_slopes']],
+                 as.vector(t(PARAMS_LIST[['IRT']][['Exams_grades_intercepts']])),
+                 PARAMS_LIST[['IRT']][['Exams_average_time']],
+                 PARAMS_LIST[['IRT']][['Exams_variability_time']])
+
+  theta_lat <- c(PARAMS_LIST[['LAT']][['Corr']], PARAMS_LIST[['LAT']][['Speed_variability']])
+  theta <- c(theta_cr, theta_irt, theta_lat)
+
+  return(theta)
+}
+
+#' @export
+paramsIvec2list <- function(THETA, HELPER_LIST) {
+  PARAMS_LIST <- list(
+    CR = list(
+      Dropout = list(Slope_ability = NULL, Slope_speed = NULL, Slope_covariates = NULL, Intercepts_year = NULL),
+      Transfer = list(Slope_ability = NULL, Slope_speed = NULL, Slope_covariates = NULL, Intercepts_year = NULL),
+      Graduation = list(Slope_ability = NULL, Slope_speed = NULL, Slope_covariates = NULL, Intercepts_year = NULL)
+    ),
+    IRT = list(
+      Exams_slopes = NULL,
+      Exams_grades_intercepts = NULL,
+      Exams_average_time = NULL,
+      Exams_variability_time = NULL
+    ),
+    LAT = list(Corr = NULL, Speed_variability = NULL)
+  )
+
+  # Initialize index
+  idx <- 1
+
+  # CR parameters
+  for (sublist in c('Dropout', 'Transfer', 'Graduation')) {
+    for (param in c('Slope_ability', 'Slope_speed', 'Slope_covariates', 'Intercepts_year')) {
+      length_param <- length(HELPER_LIST[['CR']][[sublist]][[param]])
+      PARAMS_LIST[['CR']][[sublist]][[param]] <- THETA[idx:(idx + length_param - 1)]
+      idx <- idx + length_param
+    }
+  }
+
+  # IRT parameters
+  length_param <- length(HELPER_LIST[['IRT']][['Exams_slopes']])
+  PARAMS_LIST[['IRT']][['Exams_slopes']] <- THETA[idx:(idx + length_param - 1)]
+  idx <- idx + length_param
+
+  matrix_dims <- dim(HELPER_LIST[['IRT']][['Exams_grades_intercepts']])
+  length_param <- prod(matrix_dims)
+  PARAMS_LIST[['IRT']][['Exams_grades_intercepts']] <- matrix(THETA[idx:(idx + length_param - 1)], nrow = matrix_dims[1], ncol = matrix_dims[2])
+  idx <- idx + length_param
+
+  length_param <- length(HELPER_LIST[['IRT']][['Exams_average_time']])
+  PARAMS_LIST[['IRT']][['Exams_average_time']] <- THETA[idx:(idx + length_param - 1)]
+  idx <- idx + length_param
+
+  length_param <- length(HELPER_LIST[['IRT']][['Exams_variability_time']])
+  PARAMS_LIST[['IRT']][['Exams_variability_time']] <- THETA[idx:(idx + length_param - 1)]
+  idx <- idx + length_param
+
+  # LAT parameters
+  PARAMS_LIST[['LAT']][['Corr']] <- THETA[length(THETA)-1]
+  PARAMS_LIST[['LAT']][['Speed_variability']] <- THETA[length(THETA)]
+
+  return(PARAMS_LIST)
+}
+

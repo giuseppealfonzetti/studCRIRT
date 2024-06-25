@@ -1,5 +1,5 @@
 Package: studCRIRT
-Title: Analyse student careers with a flexible Competing Risk IRT model.
+Title: Analyse student careers with a flexible Competing Risk IRT model
 Version: 0.0.0.9000
 Authors@R: 
     person("Giuseppe", "Alfonzetti", , "giuseppe.alfonzetti@uniud.it", role = c("aut", "cre"),
@@ -21,10 +21,15 @@ LinkingTo:
     Rcpp,
     RcppEigen,
     RcppNumerical,
-    cubature
+    cubature,
+    Matrix
 Imports: 
     Rcpp,
     RcppEigen,
     RcppNumerical,
-    cubature
+    cubature,
+    purrr,
+    pracma,
+    mvQuad,
+    Matrix
 VignetteBuilder: knitr

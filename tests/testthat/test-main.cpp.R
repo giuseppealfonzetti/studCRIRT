@@ -46,6 +46,8 @@ theta <- paramsList2vec(PARAMS_LIST = params_list,
                         NYA = years_after,
                         N_GRADES = grades,
                         N_EXAMS = exams)
+theta_irt <- theta[(dim_cr+1):(dim_cr+dim_irt)]
+theta_cr <- theta[1:dim_cr]
 
 ## read latent parameters from list
 rho <- params_list[['LAT']][['Corr']]
@@ -100,6 +102,7 @@ for (r in 1:nrow(dt)) {
       EXAMS_GRADES = grades_vec,
       EXAMS_DAYS = times_vec,
       EXAMS_OBSFLAG = obs_vec,
+      EXAMS_SET = rep(TRUE, length(grades_vec)),
       OUTCOME = dt$outcome[r],
       YEAR = dt$year[r],
       N_GRADES = grades,
@@ -118,6 +121,7 @@ for (r in 1:nrow(dt)) {
       EXAMS_GRADES = grades_vec,
       EXAMS_DAYS = times_vec,
       EXAMS_OBSFLAG = obs_vec,
+      EXAMS_SET = rep(TRUE, length(grades_vec)),
       OUTCOME = dt$outcome[r],
       YEAR = dt$year[r],
       N_GRADES = grades,
@@ -131,6 +135,75 @@ for (r in 1:nrow(dt)) {
     )
 
     expect_equal(exp(v1), v2)
+  })
+}
+
+
+# grid for ability and speed divided by outcome and year
+dt <- expand.grid(
+  ability = c(-100, 100),
+  speed = c(-100,100),
+  outcome = c(0,1,2,3),
+  year = 1:(yle+1)
+)
+
+for (r in 1:nrow(dt)) {
+  # use only exams observed up to `year`
+  maxTime <- 365*dt$year[r]
+  obs_vec <- grades_vec>0&times_vec<maxTime
+
+  test_that('check complete data likelihood extreme latent', {
+
+    for(exam in 1:exams){
+      val <- examLik(
+        EXAM = exam,
+        GRADE = grades_vec[exam],
+        DAY = times_vec[exam],
+        MAX_DAY = maxTime,
+        OBSFLAG = T,
+        THETA_IRT = theta_irt,
+        N_GRADES = grades,
+        N_EXAMS = length(grades_vec),
+        ABILITY = dt$ability[r],
+        SPEED = dt$speed[r],
+        LOGFLAG = TRUE
+      )
+      expect_true(is.finite(val))
+    }
+
+    val <- outcomeLik(
+      OUTCOME = dt$outcome[r],
+      YEAR_FIRST = 1,
+      YEAR_LAST = dt$year[r],
+      THETA_CR = theta_cr,
+      COVARIATES = c(dt$ability[r], dt$speed[r], x),
+      NYB = years_before,
+      NYA = years_after,
+      YEAR_LAST_EXAM = yle,
+      LOGFLAG = TRUE
+    )
+    expect_true(is.finite(val))
+
+    v1 <- complete_likelihood(
+      THETA = theta,
+      EXTCOVARIATES = x,
+      EXAMS_GRADES = grades_vec,
+      EXAMS_DAYS = times_vec,
+      EXAMS_OBSFLAG = obs_vec,
+      EXAMS_SET = rep(TRUE, length(grades_vec)),
+      OUTCOME = dt$outcome[r],
+      YEAR = dt$year[r],
+      N_GRADES = grades,
+      N_EXAMS = exams,
+      NYB = years_before,
+      NYA = years_after,
+      ABILITY = dt$ability[r],
+      SPEED = dt$speed[r],
+      YEAR_LAST_EXAM = yle,
+      LOGFLAG = TRUE
+    )
+
+    expect_true(is.finite(v1))
   })
 }
 

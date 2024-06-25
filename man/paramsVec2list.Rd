@@ -4,7 +4,17 @@
 \alias{paramsVec2list}
 \title{Construct named list from parameter vector}
 \usage{
-paramsVec2list(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS)
+paramsVec2list(
+  THETA,
+  DIM_EXT,
+  NYB,
+  NYA,
+  N_GRADES,
+  N_EXAMS,
+  LABS_EXAMS = NULL,
+  LABS_GRADES = NULL,
+  LABS_COVARIATES = NULL
+)
 }
 \arguments{
 \item{THETA}{Parameter vector. Structure to be documented.}
@@ -18,6 +28,12 @@ paramsVec2list(THETA, DIM_EXT, NYB, NYA, N_GRADES, N_EXAMS)
 \item{N_GRADES}{number of grades modelled.}
 
 \item{N_EXAMS}{number of exams.}
+
+\item{LABS_EXAMS}{optional label for exams}
+
+\item{LABS_GRADES}{optional label for grades}
+
+\item{LABS_COVARIATES}{optional label for covariates}
 }
 \value{
 Given a proper unconstrained parameter vector, it returns a

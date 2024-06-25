@@ -17,6 +17,22 @@ hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA, LOGFLAG = FALS
     .Call(`_studCRIRT_hazard`, OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA, LOGFLAG)
 }
 
+#' Evaluate hazard function based on outcome and year
+#'
+#' @param OUTCOME 1 for dropout, 2 for transfer, 3 for graduation
+#' @param YEAR Possible values 1:NYB in case of dropout/transfer; 1:NYA in case of graduation
+#' @param THETA_CR Portion of the parameter vector related to the competing risk model
+#' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external covariates
+#' @param NYB number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
+#' @param NYA number of years in the graduatable state. Needed for determining how many time-related intercepts.
+#' @param LOGFLAG Set TRUE to return log value.
+#' @returns It returns the hazard probability of the specific outcome and year.
+#'
+#' @export
+gr_hazard <- function(OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA) {
+    .Call(`_studCRIRT_gr_hazard`, OUTCOME, YEAR, THETA_CR, COVARIATES, NYB, NYA)
+}
+
 #' Evaluate survival function given a the range of years of interest
 #'
 #' @param YEAR_FIRST First year to evaluate.
@@ -35,6 +51,24 @@ survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR
     .Call(`_studCRIRT_survival`, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM, LOGFLAG)
 }
 
+#' Evaluate survival function given a the range of years of interest
+#'
+#' @param YEAR_FIRST First year to evaluate.
+#' @param YEAR_LAST Last year to evaluate.
+#' @param THETA_CR Portion of the parameter vector related to the competing risk model
+#' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
+#' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
+#' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
+#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time
+#' @param LOGFLAG Set TRUE to return log value.
+#'
+#' @returns It returns the probability of survival from `YEAR FIRST` to `YEAR_LAST` included.
+#'
+#' @export
+gr_survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L) {
+    .Call(`_studCRIRT_gr_survival`, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
+}
+
 #' Evaluate Outcome Likelihood
 #'
 #' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
@@ -50,6 +84,40 @@ survival <- function(YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR
 #' @export
 outcomeLik <- function(OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L, LOGFLAG = FALSE) {
     .Call(`_studCRIRT_outcomeLik`, OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM, LOGFLAG)
+}
+
+#' Evaluate Outcome Likelihood
+#'
+#' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
+#' @param YEAR_FIRST First year to evaluate.
+#' @param YEAR_LAST Last year to evaluate.
+#' @param THETA_CR Portion of the parameter vector related to the competing risk model
+#' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
+#' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
+#' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
+#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+#' @param LOGFLAG Set TRUE to return log value.
+#'
+#' @export
+grl_outcomeLik <- function(OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM = 100L) {
+    .Call(`_studCRIRT_grl_outcomeLik`, OUTCOME, YEAR_FIRST, YEAR_LAST, THETA_CR, COVARIATES, NYB, NYA, YEAR_LAST_EXAM)
+}
+
+#' Evaluate Outcome Likelihood
+#'
+#' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
+#' @param YEAR_FIRST First year to evaluate.
+#' @param YEAR_LAST Last year to evaluate.
+#' @param THETA_CR Portion of the parameter vector related to the competing risk model
+#' @param COVARIATES The first 2 values refers to ability and speed respectively. Remaining values are external predictors.
+#' @param NYB Total number of years in the non-graduatable regime. Needed for determining how many time-related intercepts.
+#' @param NYA Total number of years in the graduatable regime. Needed for determining how many time-related intercepts.
+#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+#' @param GRFLAG `TRUE` to compute the gradient.
+#'
+#' @export
+cr_conditional <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, YEAR_LAST_EXAM, ABILITY, SPEED, GRFLAG = TRUE) {
+    .Call(`_studCRIRT_cr_conditional`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, YEAR_LAST_EXAM, ABILITY, SPEED, GRFLAG)
 }
 
 #' Intercepts reparameterisation
@@ -123,7 +191,7 @@ extract_params_cr <- function(THETA_CR, DIM_EXT, NYB, NYA, OPTION) {
 #' @param OPTION Select parameters of interest. `1` for exam-grades slopes,
 #' `2` for exam-grade intercepts, `3` for time-mean parameter,
 #' `4` for time-var parameter.
-#' @param EXAM exam of interest. Posible values in `1:N_EXAMS`.
+#' @param EXAM exam of interest. Possible values in `1:N_EXAMS`.
 #' @export
 extract_params_irt <- function(THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM) {
     .Call(`_studCRIRT_extract_params_irt`, THETA_IRT, N_GRADES, N_EXAMS, OPTION, EXAM)
@@ -183,6 +251,7 @@ pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG, L
 #' @param EXAM Exam of interest.
 #' @param GRADE Grade of interest.
 #' @param DAY Day of interest.
+#' @param MAX_DAY Last day of observation.
 #' @param OBSFLAG TRUE for observed, FALSE for not-observed.
 #' @param THETA_IRT Portion of the parameter vector related to the IRT model
 #' @param N_GRADES Number of grades modelled.
@@ -195,8 +264,107 @@ pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG, L
 #' grade on a given exam before a given day conditioned on ability and speed.
 #'
 #' @export
-examLik <- function(EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG = FALSE) {
-    .Call(`_studCRIRT_examLik`, EXAM, GRADE, DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG)
+examLik <- function(EXAM, GRADE, DAY, MAX_DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_examLik`, EXAM, GRADE, DAY, MAX_DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG)
+}
+
+#' Evaluate the probability of grades greater or equal than the reference one
+#'
+#' @param GRADE Grade used as reference
+#' @param EXAM Exam of interest
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param ABILITY Ability value.
+#' @param LOGFLAG Set TRUE to return log value.
+#'
+#' @returns It returns the probability of obtaining grades higher than `GRADE` on exam `EXAM`.
+#'
+#' @export
+gr_pGreaterGrades <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
+    .Call(`_studCRIRT_gr_pGreaterGrades`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+}
+
+#' Evaluate the c.d.f or p.d.f of the last attempt to an exam
+#'
+#' @param EXAM Exam of interest.
+#' @param DAY Day of interest.
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param SPEED speed value.
+#' @param CDFFLAG `TRUE` for c.d.f. of time. `FALSE` for p.d.f.
+#' @param LOGFLAG Set TRUE to return log value.
+#'
+#' @export
+gr_pTimeExam <- function(EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_gr_pTimeExam`, EXAM, DAY, THETA_IRT, N_GRADES, N_EXAMS, SPEED, CDFFLAG, LOGFLAG)
+}
+
+#' Evaluate the probability of getting a specific grade
+#'
+#' @param GRADE Grade used as reference
+#' @param EXAM Exam of interest
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param ABILITY Ability value.
+#' @param LOGFLAG Set TRUE to return log value.
+#'
+#' @returns It returns the probability of obtaining the grade `GRADE` on exam `EXAM`.
+#' @export
+gr_pGrade <- function(GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY) {
+    .Call(`_studCRIRT_gr_pGrade`, GRADE, EXAM, THETA_IRT, N_GRADES, N_EXAMS, ABILITY)
+}
+
+#' Evaluate exam specific likelihood
+#'
+#' @param EXAM Exam of interest.
+#' @param GRADE Grade of interest.
+#' @param DAY Day of interest.
+#' @param MAX_DAY Last day of observation.
+#' @param OBSFLAG TRUE for observed, FALSE for not-observed.
+#' @param THETA_IRT Portion of the parameter vector related to the IRT model
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams.
+#' @param ABILITY ability value.
+#' @param SPEED speed value.
+#' @param LOGFLAG Set TRUE to return log value.
+#'
+#' @returns It returns the probability of observing or not a specific
+#' grade on a given exam before a given day conditioned on ability and speed.
+#'
+#' @export
+grl_examLik <- function(EXAM, GRADE, DAY, MAX_DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_grl_examLik`, EXAM, GRADE, DAY, MAX_DAY, OBSFLAG, THETA_IRT, N_GRADES, N_EXAMS, ABILITY, SPEED, LOGFLAG)
+}
+
+#' Evaluate the complete IRT log likelihood function
+#'
+#' @param THETA Suitable parameter vector as provided by \link{paramsList2vec}().
+#' @param EXAMS_GRADES Vector of grades.
+#' @param EXAMS_DAYS Vector of times.
+#' @param EXAMS_OBSFLAG Vector of booleans.`TRUE` elements represent observed exams. `FALSE` elements the unobserved ones.
+#' @param EXAMS_SET Vector filled with booleans.`TRUE` elements represent exams in the study plan. `FALSE` elements non-relevant ones.
+#' @param YEAR Year of evaluation.
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams modelled
+#' @param NYB Number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
+#' @param NYA Number of years in the graduatable state. Needed for determining how many time-related intercepts.
+#' @param DIM_EXT Number of external covariates in the CR conditional model.
+#' @param ABILITY Ability value.
+#' @param SPEED Speed value.
+#' @param GRFLAG `TRUE` to compute the gradient.
+#'
+#' @return It returns a list with:
+#' \itemize{
+#'   \item ll - The log-likelihood of the conditional IRT model.
+#'   \item gr - The gradient of the log-likelihood.
+#' }
+#'
+#' @export
+irt_conditional <- function(THETA, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, YEAR, N_GRADES, N_EXAMS, NYB, NYA, DIM_EXT, ABILITY, SPEED, GRFLAG = TRUE) {
+    .Call(`_studCRIRT_irt_conditional`, THETA, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, YEAR, N_GRADES, N_EXAMS, NYB, NYA, DIM_EXT, ABILITY, SPEED, GRFLAG)
 }
 
 #' Joint density of speed and ability
@@ -212,13 +380,63 @@ latent_distr <- function(ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG = FALSE) {
     .Call(`_studCRIRT_latent_distr`, ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG)
 }
 
-#' Evaluate the complete data likelihood function
+#' Joint density of speed and ability
+#'
+#' @param ABILITY ability value.
+#' @param SPEED speed value.
+#' @param PAR1 L[2,1].
+#' @param PAR2 L[2,2].
+#' @param LOGFLAG `TRUE` for log density.
+#'
+#' @export
+latent_distr2 <- function(ABILITY, SPEED, PAR1, PAR2, LOGFLAG = FALSE) {
+    .Call(`_studCRIRT_latent_distr2`, ABILITY, SPEED, PAR1, PAR2, LOGFLAG)
+}
+
+#' Gradient of the log joint density of speed and ability
+#'
+#' @param ABILITY ability value.
+#' @param SPEED speed value.
+#' @param PAR1 L[2,1].
+#' @param PAR2 L[2,2].
+#' @param LOGFLAG `TRUE` for log density.
+#'
+#' @export
+grl_latent_distr2 <- function(ABILITY, SPEED, PAR1, PAR2) {
+    .Call(`_studCRIRT_grl_latent_distr2`, ABILITY, SPEED, PAR1, PAR2)
+}
+
+#' Latent distribution
+#'
+#' Provides a wrapper for the cpp class `LAT_DISTR`, which computes
+#' log density and gradient of the joint distribution of ability and speed.
+#'
+#' @param ABILITY ability value.
+#' @param SPEED speed value.
+#' @param THETA parameters vector. The last two elements are used as (L[2,1], L[2,2]), where L is the lower triangular Cholesky of the latent covariance matrix.
+#' @param GRFLAG `TRUE` to compute the gradient.
+#'
+#' @return It returns a list with:
+#' \itemize{
+#'   \item ll - The log-likelihood of the latent distribution.
+#'   \item gr - The gradient of the log-likelihood.
+#' }
+#'
+#' @export
+lat_distr <- function(ABILITY, SPEED, THETA, GRFLAG = TRUE) {
+    .Call(`_studCRIRT_lat_distr`, ABILITY, SPEED, THETA, GRFLAG)
+}
+
+#' Full model
+#'
+#' Evaluate the full model log likelihood of a single observation
 #'
 #' @param THETA Suitable parameter vector as provided by \link{paramsList2vec}().
 #' @param EXTCOVARIATES External covariates.
 #' @param EXAMS_GRADES Vector of grades.
 #' @param EXAMS_DAYS Vector of times.
 #' @param EXAMS_OBSFLAG Vector of booleans.`TRUE` elements represent observed exams. `FALSE` elements the unobserved ones.
+#' @param EXAMS_SET Vector filled with booleans.`TRUE` elements represent exams in the study plan. `FALSE` elements non-relevant ones.
 #' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
 #' @param YEAR Year of evaluation.
 #' @param N_GRADES Number of grades modelled.
@@ -228,13 +446,42 @@ latent_distr <- function(ABILITY, SPEED, REPRHO, REPSIGMA, LOGFLAG = FALSE) {
 #' @param ABILITY Ability value.
 #' @param SPEED Speed value.
 #' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
-#' @param LOGFLAG Set TRUE to return log value.
+#' @param GRFLAG `TRUE` to compute the gradient.
 #'
-#' @returns It returns the value of the integrand function,
+#' @return It returns the value of the integrand function,
 #' given the parameters and the data of a single observation.
 #'
 #' @export
-complete_likelihood <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM = 100L, LOGFLAG = FALSE) {
-    .Call(`_studCRIRT_complete_likelihood`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, OUTCOME, YEAR, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, YEAR_LAST_EXAM, LOGFLAG)
+full_model <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, OUTCOME, YEAR, YEAR_LAST_EXAM, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, GRFLAG = TRUE) {
+    .Call(`_studCRIRT_full_model`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, OUTCOME, YEAR, YEAR_LAST_EXAM, N_GRADES, N_EXAMS, NYB, NYA, ABILITY, SPEED, GRFLAG)
+}
+
+#' Full model
+#'
+#' Evaluate the full model log likelihood of a single observation
+#'
+#' @param THETA Suitable parameter vector as provided by \link{paramsList2vec}().
+#' @param EXTCOVARIATES External covariates.
+#' @param EXAMS_GRADES Vector of grades.
+#' @param EXAMS_DAYS Vector of times.
+#' @param EXAMS_OBSFLAG Vector of booleans.`TRUE` elements represent observed exams. `FALSE` elements the unobserved ones.
+#' @param EXAMS_SET Vector filled with booleans.`TRUE` elements represent exams in the study plan. `FALSE` elements non-relevant ones.
+#' @param OUTCOME  `1` for dropout, `2` for transfer, `3` for graduation. `0` if no outcome is observed.
+#' @param YEAR Year of evaluation.
+#' @param N_GRADES Number of grades modelled.
+#' @param N_EXAMS Number of exams modelled
+#' @param NYB Number of years in the non-graduatable state. Needed for determining how many time-related intercepts.
+#' @param NYA Number of years in the graduatable state. Needed for determining how many time-related intercepts.
+#' @param ABILITY Ability value.
+#' @param SPEED Speed value.
+#' @param YEAR_LAST_EXAM Year at which the all exams are completed for the first time.
+#' @param GRFLAG `TRUE` to compute the gradient.
+#'
+#' @return It returns the value of the integrand function,
+#' given the parameters and the data of a single observation.
+#'
+#' @export
+full_GH_sample <- function(THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, OUTCOME, YEAR, YEAR_LAST_EXAM, GRID, WEIGHTS, N_GRADES, N_EXAMS, NYB, NYA, GRFLAG = TRUE) {
+    .Call(`_studCRIRT_full_GH_sample`, THETA, EXTCOVARIATES, EXAMS_GRADES, EXAMS_DAYS, EXAMS_OBSFLAG, EXAMS_SET, OUTCOME, YEAR, YEAR_LAST_EXAM, GRID, WEIGHTS, N_GRADES, N_EXAMS, NYB, NYA, GRFLAG)
 }
 

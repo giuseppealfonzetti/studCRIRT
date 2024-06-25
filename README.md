@@ -160,6 +160,7 @@ dtopt <- expand_grid(
                         EXAMS_GRADES = grades_vec,
                         EXAMS_DAYS = times_vec,
                         EXAMS_OBSFLAG = obs_vec,
+                        EXAMS_SET = rep(TRUE, length(grades_vec)),
                         OUTCOME = x3,
                         YEAR = x4,
                         N_GRADES = grades,
@@ -184,22 +185,6 @@ dtopt <- expand_grid(
     ability = map_dbl(opt, ~.x[1]),
     speed = map_dbl(opt, ~.x[2])
   )
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
-#> Error in optim(par = c(0, 0), fn = Rfun) : 
-#>   la funzione non può essere calcolata per i parametri iniziali
 
 # compute integrand value on the grid
 dt_val <- dt |>
@@ -217,6 +202,7 @@ dt_val <- dt |>
                         EXAMS_GRADES = grades_vec,
                         EXAMS_DAYS = times_vec,
                         EXAMS_OBSFLAG = obs_vec,
+                        EXAMS_SET = rep(TRUE, length(grades_vec)),
                         OUTCOME = x3,
                         YEAR = x4,
                         N_GRADES = grades,

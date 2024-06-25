@@ -13,4 +13,7 @@ NULL
 ## usethis namespace: end
 NULL
 
-
+## usethis namespace: start
+#' @importFrom stats optim
+## usethis namespace: end
+NULL

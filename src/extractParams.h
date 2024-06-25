@@ -188,7 +188,7 @@ Eigen::VectorXd extract_params_cr(
 //' @param OPTION Select parameters of interest. `1` for exam-grades slopes,
 //' `2` for exam-grade intercepts, `3` for time-mean parameter,
 //' `4` for time-var parameter.
-//' @param EXAM exam of interest. Posible values in `1:N_EXAMS`.
+//' @param EXAM exam of interest. Possible values in `1:N_EXAMS`.
 //' @export
 // [[Rcpp::export]]
 Eigen::VectorXd extract_params_irt(
